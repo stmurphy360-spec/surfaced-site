@@ -1,26 +1,15 @@
+/* app/globals.css */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* Brand Colors */
+  --color-cream:      #FAF8F5;
+  --color-ink:        #1A1A1A;
+  --color-ocean:      #1E5FA8;
+  --color-ocean-dark: #174E8C;
+  --color-subtle:     #6B7280;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Typography — CSS vars injected by next/font/google on <html> */
+  --font-display: var(--font-dm-serif), Georgia, "Times New Roman", serif;
+  --font-body:    var(--font-inter), system-ui, -apple-system, sans-serif;
 }
