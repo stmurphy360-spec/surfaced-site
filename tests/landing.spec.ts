@@ -31,6 +31,12 @@ test.describe('LAND-05: single CTA discipline', () => {
     await expect(externalLinks).toHaveCount(0)
   })
 
+  test('privacy disclaimer link is an internal relative link', async ({ page }) => {
+    await page.goto('/')
+    const privacyLink = page.locator('a[href="/privacy"]')
+    await expect(privacyLink).toHaveCount(1)
+  })
+
   test('form success state replaces form inline after valid submit', async ({ page }) => {
     await page.goto('/')
     await page.fill('input[name="email"]', 'test@example.com')
