@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { LoopsClient, APIError } from 'loops'
+import { track } from '@vercel/analytics/server'
 
 const loops = new LoopsClient(process.env.LOOPS_API_KEY as string)
 
@@ -23,11 +24,13 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    await track('signup')
     return NextResponse.json({ success: true })
   } catch (error) {
     if (error instanceof APIError) {
       if (error.statusCode === 409) {
         // Duplicate email — silent success per spec
+        await track('signup')
         return NextResponse.json({ success: true })
       }
     }
