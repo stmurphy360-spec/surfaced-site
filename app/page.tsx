@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Wordmark } from '@/components/Wordmark'
 import { EmailForm } from '@/components/EmailForm'
 
@@ -18,6 +19,13 @@ export default function Home() {
         <EmailForm />
         <p className="mt-3 text-xs text-subtle">Early access is limited.</p>
         <p className="mt-1 text-xs text-subtle">No spam. Unsubscribe any time.</p>
+        <p className="mt-1 text-xs text-subtle">
+          By submitting, you agree to our{' '}
+          <Link href="/privacy" className="underline hover:text-ink transition-colors">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </section>
 
       <section className="mx-auto max-w-2xl px-6 pb-16 md:pb-20">
