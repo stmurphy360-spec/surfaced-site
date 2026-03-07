@@ -8,7 +8,7 @@ export function EmailForm() {
   const [state, setState] = useState<FormState>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setErrorMsg(null)
     setState('idle')
@@ -29,8 +29,28 @@ export function EmailForm() {
       return
     }
 
-    // Phase 7: simulate success immediately — no fetch/POST (Phase 8 wires the real API route)
-    setState('submitted')
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, company }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setErrorMsg(
+          (data as { error?: string }).error ??
+            'Something went wrong. Please try again.'
+        )
+        setState('error')
+        return
+      }
+
+      setState('submitted')
+    } catch {
+      setErrorMsg('Something went wrong. Please try again.')
+      setState('error')
+    }
   }
 
   if (state === 'submitted') {
