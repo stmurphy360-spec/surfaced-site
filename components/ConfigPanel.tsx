@@ -18,16 +18,23 @@ function humanizeKey(key: string): string {
 
 export function ConfigPanel() {
   const [config, setConfig] = useState<ConfigData | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [newCompetitor, setNewCompetitor] = useState<Record<string, string>>({})
 
   useEffect(() => {
     fetch('/api/config', { cache: 'no-store' })
-      .then(res => (res.ok ? res.json() : null))
+      .then(res => {
+        if (!res.ok) {
+          setLoadError(`Could not reach config API (${res.status})`)
+          return null
+        }
+        return res.json()
+      })
       .then(data => {
         if (data) setConfig(data)
       })
-      .catch(() => {})
+      .catch(() => setLoadError('Could not reach config API'))
   }, [])
 
   async function handleSave() {
@@ -80,7 +87,9 @@ export function ConfigPanel() {
     return (
       <div className="bg-white rounded-lg border border-stone-200 p-6 space-y-6">
         <h2 className="font-medium text-ink text-lg">Configuration</h2>
-        <p className="text-stone-400 text-sm">Loading config...</p>
+        <p className="text-stone-400 text-sm">
+          {loadError ?? 'Loading config...'}
+        </p>
       </div>
     )
   }
