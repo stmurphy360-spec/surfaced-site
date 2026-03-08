@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 type ConfigData = {
   brand_name: string
@@ -21,8 +21,9 @@ export function ConfigPanel() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [newCompetitor, setNewCompetitor] = useState<Record<string, string>>({})
+  const configRef = useRef<ConfigData | null>(null)
 
-  useEffect(() => {
+  function loadConfig() {
     fetch('/api/config', { cache: 'no-store' })
       .then(res => {
         if (!res.ok) {
@@ -32,19 +33,25 @@ export function ConfigPanel() {
         return res.json()
       })
       .then(data => {
-        if (data) setConfig(data)
+        if (data) {
+          configRef.current = data
+          setConfig(data)
+        }
       })
       .catch(() => setLoadError('Could not reach config API'))
-  }, [])
+  }
+
+  useEffect(() => { loadConfig() }, [])
 
   async function handleSave() {
-    if (!config) return
+    const current = configRef.current
+    if (!current) return
     setSaveState('saving')
     try {
       const res = await fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
+        body: JSON.stringify(current),
       })
       if (res.ok) {
         setSaveState('saved')
@@ -62,25 +69,29 @@ export function ConfigPanel() {
   function addCompetitor(productLine: string, name: string) {
     const trimmed = name.trim()
     if (!trimmed || !config) return
-    setConfig({
+    const next = {
       ...config,
       competitors: {
         ...config.competitors,
         [productLine]: [...(config.competitors[productLine] ?? []), trimmed],
       },
-    })
+    }
+    configRef.current = next
+    setConfig(next)
     setNewCompetitor(prev => ({ ...prev, [productLine]: '' }))
   }
 
   function removeCompetitor(productLine: string, index: number) {
     if (!config) return
-    setConfig({
+    const next = {
       ...config,
       competitors: {
         ...config.competitors,
         [productLine]: config.competitors[productLine].filter((_, i) => i !== index),
       },
-    })
+    }
+    configRef.current = next
+    setConfig(next)
   }
 
   if (!config) {
@@ -116,7 +127,11 @@ export function ConfigPanel() {
           id="brand-name"
           type="text"
           value={config.brand_name}
-          onChange={e => setConfig({ ...config, brand_name: e.target.value })}
+          onChange={e => {
+            const next = { ...config, brand_name: e.target.value }
+            configRef.current = next
+            setConfig(next)
+          }}
           className="w-full rounded-md border border-stone-200 px-3 py-2 text-sm text-ink focus:outline-none focus:ring-1 focus:ring-ocean"
         />
       </div>
