@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { LoopsClient, APIError } from 'loops'
 import { track } from '@vercel/analytics/server'
 
-console.log('LOOPS_API_KEY set:', !!process.env.LOOPS_API_KEY)
 const loops = new LoopsClient(process.env.LOOPS_API_KEY as string)
 
 export async function POST(request: NextRequest) {
@@ -18,14 +17,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const result = await loops.createContact({
+    await loops.createContact({
       email,
       properties: {
         companyName: company,
       },
     })
-
-    console.log('Loops createContact result:', JSON.stringify(result))
     await track('signup')
     return NextResponse.json({ success: true })
   } catch (error) {
