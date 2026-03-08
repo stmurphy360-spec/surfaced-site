@@ -5,15 +5,15 @@ const PYTHON_API_SECRET = process.env.PYTHON_API_SECRET ?? ''
 
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ run_id: string }> }
+  { params }: { params: Promise<{ job_id: string }> }
 ) {
-  const { run_id } = await params
+  const { job_id } = await params
   const { searchParams } = new URL(req.url)
   const file = searchParams.get('file')
 
   const upstreamPath = file === 'csv-bundle'
-    ? `/files/${run_id}/csv-bundle`
-    : `/files/${run_id}/report.html`
+    ? `/files/${job_id}/csv-bundle`
+    : `/files/${job_id}/report.html`
 
   try {
     const res = await fetch(`${PYTHON_API}${upstreamPath}`, {
