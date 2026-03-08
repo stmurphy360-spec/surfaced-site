@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { RunPanel } from '@/components/RunPanel'
+import { ConfigPanel } from '@/components/ConfigPanel'
 
 export const metadata: Metadata = {
   title: 'Dashboard — LLM Visibility Tracker',
@@ -12,6 +13,7 @@ export default function DashboardPage() {
       <div className="w-full max-w-md space-y-6">
         <h1 className="font-display text-2xl text-ink">LLM Visibility Tracker</h1>
         <RunPanel />
+        <ConfigPanel />
       </div>
     </main>
   )
