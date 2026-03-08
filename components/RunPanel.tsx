@@ -44,7 +44,7 @@ export function RunPanel() {
           setState({ phase: 'done', runId: data.run_id })
         } else if (data.status === 'error') {
           clearInterval(intervalId)
-          setState({ phase: 'error', message: data.error ?? 'Run failed' })
+          setState({ phase: 'error', message: data.error ?? 'Analysis failed' })
         }
       } catch {
         // network error — keep polling
@@ -74,7 +74,7 @@ export function RunPanel() {
       const res = await fetch('/api/runs', { method: 'POST', cache: 'no-store' })
       const data = await res.json()
       if (!res.ok) {
-        setState({ phase: 'error', message: data.error ?? 'Failed to start run' })
+        setState({ phase: 'error', message: data.error ?? 'Failed to start analysis' })
         return
       }
       setState({ phase: 'running', jobId: data.job_id })
@@ -92,13 +92,13 @@ export function RunPanel() {
         onClick={() => setState({ phase: 'confirming' })}
         className="rounded-md bg-ocean px-4 py-3 font-body font-semibold text-cream hover:bg-ocean-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Run Visibility Check
+        Start Analysis
       </button>
 
       {state.phase === 'confirming' && (
         <div className="space-y-2">
           <p className="font-body text-ink text-sm">
-            This will trigger a full LLM visibility run. Continue?
+            This will start a full visibility + sentiment analysis. Continue?
           </p>
           <div className="flex gap-2">
             <button
@@ -120,16 +120,16 @@ export function RunPanel() {
       {state.phase === 'running' && (
         <div className="flex items-center gap-2">
           <div className="animate-spin h-4 w-4 rounded-full border-2 border-ocean border-t-transparent" />
-          <p className="font-body text-ink text-sm">Run in progress...</p>
+          <p className="font-body text-ink text-sm">Analysis in progress...</p>
         </div>
       )}
 
       {state.phase === 'done' && (
-        <p className="font-body text-ink text-sm">Run complete. Redirecting...</p>
+        <p className="font-body text-ink text-sm">Analysis complete. Redirecting...</p>
       )}
 
       {state.phase === 'error' && (
-        <p className="font-body text-sm text-red-600">&#10007; Run failed: {state.message}</p>
+        <p className="font-body text-sm text-red-600">✗ Analysis failed: {state.message}</p>
       )}
     </div>
   )
