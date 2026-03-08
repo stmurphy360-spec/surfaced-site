@@ -1,0 +1,40 @@
+import { NextResponse } from 'next/server'
+
+const PYTHON_API = process.env.PYTHON_API_URL ?? 'http://localhost:8000'
+const PYTHON_API_SECRET = process.env.PYTHON_API_SECRET ?? ''
+
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ run_id: string }> }
+) {
+  const { run_id } = await params
+  const { searchParams } = new URL(req.url)
+  const file = searchParams.get('file')
+
+  const upstreamPath = file === 'csv-bundle'
+    ? `/files/${run_id}/csv-bundle`
+    : `/files/${run_id}/report.html`
+
+  try {
+    const res = await fetch(`${PYTHON_API}${upstreamPath}`, {
+      headers: { Authorization: `Bearer ${PYTHON_API_SECRET}` },
+      cache: 'no-store',
+    })
+    if (!res.ok) {
+      return NextResponse.json({ error: 'File not available' }, { status: res.status })
+    }
+    const buffer = await res.arrayBuffer()
+    const contentDisposition = file === 'csv-bundle'
+      ? (res.headers.get('content-disposition') ?? 'attachment')
+      : 'inline'
+    return new Response(buffer, {
+      status: 200,
+      headers: {
+        'Content-Type': res.headers.get('content-type') ?? 'application/octet-stream',
+        'Content-Disposition': contentDisposition,
+      },
+    })
+  } catch {
+    return NextResponse.json({ error: 'FastAPI unreachable' }, { status: 503 })
+  }
+}

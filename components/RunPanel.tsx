@@ -1,17 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 type RunState =
   | { phase: 'idle' }
   | { phase: 'confirming' }
   | { phase: 'running'; jobId: string }
-  | { phase: 'done' }
+  | { phase: 'done'; runId: string }
   | { phase: 'error'; message: string }
 
 const POLL_INTERVAL_MS = 3000
 
 export function RunPanel() {
+  const router = useRouter()
   const [state, setState] = useState<RunState>({ phase: 'idle' })
 
   // Mount effect: check for active job on load (RUN-04)
@@ -39,7 +41,7 @@ export function RunPanel() {
         const data = await res.json()
         if (data.status === 'done') {
           clearInterval(intervalId)
-          setState({ phase: 'done' })
+          setState({ phase: 'done', runId: data.run_id })
         } else if (data.status === 'error') {
           clearInterval(intervalId)
           setState({ phase: 'error', message: data.error ?? 'Run failed' })
@@ -52,17 +54,20 @@ export function RunPanel() {
     return () => clearInterval(intervalId)
   }, [state])
 
-  // Auto-reset effect: reset to idle after done/error
+  // Auto-reset effect: reset to idle after error
   useEffect(() => {
-    if (state.phase === 'done') {
-      const t = setTimeout(() => setState({ phase: 'idle' }), 5000)
-      return () => clearTimeout(t)
-    }
     if (state.phase === 'error') {
       const t = setTimeout(() => setState({ phase: 'idle' }), 8000)
       return () => clearTimeout(t)
     }
   }, [state.phase])
+
+  // Navigate to results page when run completes
+  useEffect(() => {
+    if (state.phase === 'done') {
+      router.push(`/dashboard/results/${state.runId}`)
+    }
+  }, [state, router])
 
   async function handleConfirm() {
     try {
@@ -120,7 +125,7 @@ export function RunPanel() {
       )}
 
       {state.phase === 'done' && (
-        <p className="font-body text-ink text-sm">&#10003; Run complete.</p>
+        <p className="font-body text-ink text-sm">Run complete. Redirecting...</p>
       )}
 
       {state.phase === 'error' && (
