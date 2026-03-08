@@ -123,6 +123,7 @@ export function ConfigPanel() {
         <label className="block text-sm font-medium text-ink" htmlFor="brand-name">
           Brand Name
         </label>
+        <p className="text-sm text-stone-400">The brand tracked across all responses.</p>
         <input
           id="brand-name"
           type="text"
