@@ -1,0 +1,170 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+
+type ConfigData = {
+  brand_name: string
+  competitors: Record<string, string[]>
+}
+
+type SaveState = 'idle' | 'saving' | 'saved' | 'error'
+
+function humanizeKey(key: string): string {
+  return key
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+export function ConfigPanel() {
+  const [config, setConfig] = useState<ConfigData | null>(null)
+  const [saveState, setSaveState] = useState<SaveState>('idle')
+  const [newCompetitor, setNewCompetitor] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    fetch('/api/config', { cache: 'no-store' })
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        if (data) setConfig(data)
+      })
+      .catch(() => {})
+  }, [])
+
+  async function handleSave() {
+    if (!config) return
+    setSaveState('saving')
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config),
+      })
+      if (res.ok) {
+        setSaveState('saved')
+        setTimeout(() => setSaveState('idle'), 3000)
+      } else {
+        setSaveState('error')
+        setTimeout(() => setSaveState('idle'), 5000)
+      }
+    } catch {
+      setSaveState('error')
+      setTimeout(() => setSaveState('idle'), 5000)
+    }
+  }
+
+  function addCompetitor(productLine: string, name: string) {
+    const trimmed = name.trim()
+    if (!trimmed || !config) return
+    setConfig({
+      ...config,
+      competitors: {
+        ...config.competitors,
+        [productLine]: [...(config.competitors[productLine] ?? []), trimmed],
+      },
+    })
+    setNewCompetitor(prev => ({ ...prev, [productLine]: '' }))
+  }
+
+  function removeCompetitor(productLine: string, index: number) {
+    if (!config) return
+    setConfig({
+      ...config,
+      competitors: {
+        ...config.competitors,
+        [productLine]: config.competitors[productLine].filter((_, i) => i !== index),
+      },
+    })
+  }
+
+  if (!config) {
+    return (
+      <div className="bg-white rounded-lg border border-stone-200 p-6 space-y-6">
+        <h2 className="font-medium text-ink text-lg">Configuration</h2>
+        <p className="text-stone-400 text-sm">Loading config...</p>
+      </div>
+    )
+  }
+
+  const saveLabel =
+    saveState === 'saving'
+      ? 'Saving...'
+      : saveState === 'saved'
+        ? 'Saved'
+        : saveState === 'error'
+          ? 'Error'
+          : 'Save'
+
+  return (
+    <div className="bg-white rounded-lg border border-stone-200 p-6 space-y-6">
+      <h2 className="font-medium text-ink text-lg">Configuration</h2>
+
+      {/* Brand name */}
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-ink" htmlFor="brand-name">
+          Brand Name
+        </label>
+        <input
+          id="brand-name"
+          type="text"
+          value={config.brand_name}
+          onChange={e => setConfig({ ...config, brand_name: e.target.value })}
+          className="w-full rounded-md border border-stone-200 px-3 py-2 text-sm text-ink focus:outline-none focus:ring-1 focus:ring-ocean"
+        />
+      </div>
+
+      {/* Competitors per product line */}
+      {Object.entries(config.competitors).map(([productLine, competitors]) => (
+        <div key={productLine} className="space-y-2">
+          <p className="text-sm font-medium text-ink">{humanizeKey(productLine)}</p>
+
+          {/* Existing competitors */}
+          <ul className="space-y-1">
+            {competitors.map((competitor, index) => (
+              <li key={index} className="flex items-center justify-between">
+                <span className="text-sm text-ink">{competitor}</span>
+                <button
+                  onClick={() => removeCompetitor(productLine, index)}
+                  className="text-stone-400 hover:text-red-500 text-xs px-1"
+                  aria-label={`Remove ${competitor}`}
+                >
+                  x
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          {/* Add competitor */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Add competitor..."
+              value={newCompetitor[productLine] ?? ''}
+              onChange={e =>
+                setNewCompetitor(prev => ({ ...prev, [productLine]: e.target.value }))
+              }
+              onKeyDown={e => {
+                if (e.key === 'Enter') addCompetitor(productLine, newCompetitor[productLine] ?? '')
+              }}
+              className="flex-1 rounded-md border border-stone-200 px-3 py-1.5 text-sm text-ink focus:outline-none focus:ring-1 focus:ring-ocean"
+            />
+            <button
+              onClick={() => addCompetitor(productLine, newCompetitor[productLine] ?? '')}
+              className="rounded-md border border-stone-200 px-3 py-1.5 text-sm text-ink hover:bg-stone-50"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      ))}
+
+      {/* Save button */}
+      <button
+        onClick={handleSave}
+        disabled={saveState === 'saving'}
+        className="rounded-md bg-ocean px-4 py-2 font-body font-semibold text-cream hover:bg-ocean-dark disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+      >
+        {saveLabel}
+      </button>
+    </div>
+  )
+}
