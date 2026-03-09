@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 type ConfigData = {
   brand_name: string
   competitors: Record<string, string[]>
+  claims: Record<string, string[]>
 }
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error'
@@ -21,6 +22,7 @@ export function ConfigPanel() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [newCompetitor, setNewCompetitor] = useState<Record<string, string>>({})
+  const [newClaim, setNewClaim] = useState<Record<string, string>>({})
   const configRef = useRef<ConfigData | null>(null)
 
   function loadConfig() {
@@ -88,6 +90,34 @@ export function ConfigPanel() {
       competitors: {
         ...config.competitors,
         [productLine]: config.competitors[productLine].filter((_, i) => i !== index),
+      },
+    }
+    configRef.current = next
+    setConfig(next)
+  }
+
+  function addClaim(productLine: string, text: string) {
+    const trimmed = text.trim()
+    if (!trimmed || !config) return
+    const next = {
+      ...config,
+      claims: {
+        ...config.claims,
+        [productLine]: [...(config.claims[productLine] ?? []), trimmed],
+      },
+    }
+    configRef.current = next
+    setConfig(next)
+    setNewClaim(prev => ({ ...prev, [productLine]: '' }))
+  }
+
+  function removeClaim(productLine: string, index: number) {
+    if (!config) return
+    const next = {
+      ...config,
+      claims: {
+        ...config.claims,
+        [productLine]: config.claims[productLine].filter((_, i) => i !== index),
       },
     }
     configRef.current = next
