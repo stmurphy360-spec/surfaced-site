@@ -212,6 +212,59 @@ export function ConfigPanel() {
         </div>
       ))}
 
+      {/* Claims per product line */}
+      {config.claims && Object.keys(config.claims).length > 0 && (
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm font-medium text-ink">Brand Claims</p>
+            <p className="text-sm text-stone-400">Key claims tracked per product line.</p>
+          </div>
+          {Object.entries(config.claims).map(([productLine, claims]) => (
+            <div key={productLine} className="space-y-2">
+              <p className="text-sm font-medium text-ink">{humanizeKey(productLine)}</p>
+
+              {/* Existing claims */}
+              <ul className="space-y-1">
+                {claims.map((claim, index) => (
+                  <li key={index} className="flex items-center justify-between">
+                    <span className="text-sm text-ink">{claim}</span>
+                    <button
+                      onClick={() => removeClaim(productLine, index)}
+                      className="text-stone-400 hover:text-red-500 text-xs px-1"
+                      aria-label={`Remove claim: ${claim}`}
+                    >
+                      x
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Add claim */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add claim..."
+                  value={newClaim[productLine] ?? ''}
+                  onChange={e =>
+                    setNewClaim(prev => ({ ...prev, [productLine]: e.target.value }))
+                  }
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') addClaim(productLine, newClaim[productLine] ?? '')
+                  }}
+                  className="flex-1 rounded-md border border-stone-200 px-3 py-1.5 text-sm text-ink focus:outline-none focus:ring-1 focus:ring-ocean"
+                />
+                <button
+                  onClick={() => addClaim(productLine, newClaim[productLine] ?? '')}
+                  className="rounded-md border border-stone-200 px-3 py-1.5 text-sm text-ink hover:bg-stone-50"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Save button */}
       <button
         onClick={handleSave}
