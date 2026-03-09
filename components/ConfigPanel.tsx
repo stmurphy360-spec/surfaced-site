@@ -224,20 +224,24 @@ export function ConfigPanel() {
               <p className="text-sm font-medium text-ink">{humanizeKey(productLine)}</p>
 
               {/* Existing claims */}
-              <ul className="space-y-1">
-                {claims.map((claim, index) => (
-                  <li key={index} className="flex items-center justify-between">
-                    <span className="text-sm text-ink">{claim}</span>
-                    <button
-                      onClick={() => removeClaim(productLine, index)}
-                      className="text-stone-400 hover:text-red-500 text-xs px-1"
-                      aria-label={`Remove claim: ${claim}`}
-                    >
-                      x
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              {claims.length === 0 ? (
+                <p className="text-sm text-stone-400">No claims configured</p>
+              ) : (
+                <ul className="space-y-1">
+                  {claims.map((claim, index) => (
+                    <li key={index} className="flex items-center justify-between">
+                      <span className="text-sm text-ink">{claim}</span>
+                      <button
+                        onClick={() => removeClaim(productLine, index)}
+                        className="text-stone-400 hover:text-red-500 text-xs px-1"
+                        aria-label={`Remove claim: ${claim}`}
+                      >
+                        x
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               {/* Add claim */}
               <div className="flex gap-2">
