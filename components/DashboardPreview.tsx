@@ -46,7 +46,7 @@ function MetricCard({ label, value, delta, deltaVariant }: {
 
 export function DashboardPreview() {
   return (
-    <section id="preview" className="bg-bg-subtle py-16 md:py-20">
+    <section id="preview" className="bg-bg-subtle py-10 md:py-12">
       <div className="mx-auto max-w-2xl px-6">
         {/* Section label */}
         <p className="text-xs font-medium text-subtle mb-6 uppercase tracking-widest">

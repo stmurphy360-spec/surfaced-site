@@ -17,7 +17,7 @@ const PROOF_ITEMS = [
 export function HeroSection() {
   return (
     <section id="hero" className="bg-bg">
-      <div className="mx-auto max-w-2xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
+      <div className="mx-auto max-w-2xl px-6 pt-16 pb-10 md:pt-24 md:pb-14">
         {/* Eyebrow badge */}
         <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-ocean bg-green-light px-3 py-1.5 rounded-full mb-8">
           <span className="w-1.5 h-1.5 rounded-full bg-ocean animate-pulse" aria-hidden="true" />
@@ -38,7 +38,7 @@ export function HeroSection() {
         </p>
 
         {/* CTA group */}
-        <div className="flex items-center gap-4 flex-wrap mb-14">
+        <div className="flex items-center gap-4 flex-wrap mb-8">
           <Link
             href="#cta"
             className="inline-flex items-center justify-center px-6 py-3 bg-ocean text-white font-semibold text-sm rounded-lg hover:bg-ocean-dark transition-colors"
