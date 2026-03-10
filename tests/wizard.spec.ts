@@ -52,7 +52,12 @@ test.describe('WIZ-03: claims', () => {
   test('claims step renders brand section and per-product sections', async ({ page }) => {
     await mockNoConfig(page)
     await page.goto('/wizard')
-    // FAILS: /wizard route does not exist yet
+    // Step 1: enter brand and continue
+    await page.getByPlaceholder(/brand name/i).fill('Test Brand')
+    await page.getByRole('button', { name: 'Continue' }).click()
+    // Step 2: skip products, continue to step 3
+    await page.getByRole('button', { name: 'Continue' }).click()
+    // Step 3: claims step should show Brand Messaging section
     await expect(page.getByText('Brand Messaging')).toBeVisible()
   })
 })

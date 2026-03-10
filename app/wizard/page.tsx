@@ -303,6 +303,106 @@ function StepProducts({
   )
 }
 
+// ── Step 3: Claims ─────────────────────────────────────────────────────────
+
+function StepClaims({
+  products,
+  claimsBrand,
+  claimsProducts,
+  onChangeBrand,
+  onChangeProduct,
+  onNext,
+  onBack,
+}: {
+  products: string[]
+  claimsBrand: string[]
+  claimsProducts: Record<string, string[]>
+  onChangeBrand: (claims: string[]) => void
+  onChangeProduct: (product: string, claims: string[]) => void
+  onNext: () => void
+  onBack: () => void
+}) {
+  return (
+    <div className="step-card">
+      <div className="step-eyebrow">Step 3 of 6</div>
+      <div className="step-title">What claims do you make?</div>
+      <div className="step-subtitle">
+        Add the key messages you want LLMs to affirm. Optional — you can add
+        more later.
+      </div>
+
+      <div className="wiz-section-label">BRAND MESSAGING</div>
+      <TagInput
+        tags={claimsBrand}
+        onChange={onChangeBrand}
+        placeholder="e.g. We pay structured settlements fast"
+        hint="Press Enter or comma to add each claim"
+      />
+
+      {products.length > 0 &&
+        products.map((product) => (
+          <div key={product}>
+            <div className="wiz-section-label">{product.toUpperCase()}</div>
+            <TagInput
+              tags={claimsProducts[product] ?? []}
+              onChange={(tags) => onChangeProduct(product, tags)}
+              hint="Press Enter or comma to add each claim"
+            />
+          </div>
+        ))}
+
+      <div className="wiz-btn-actions">
+        <button className="wiz-btn-secondary" onClick={onBack} type="button">
+          Back
+        </button>
+        <button className="wiz-btn-primary" onClick={onNext} type="button">
+          Continue
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Step 4: Competitors ────────────────────────────────────────────────────
+
+function StepCompetitors({
+  competitors,
+  onChange,
+  onNext,
+  onBack,
+}: {
+  competitors: string[]
+  onChange: (competitors: string[]) => void
+  onNext: () => void
+  onBack: () => void
+}) {
+  return (
+    <div className="step-card">
+      <div className="step-eyebrow">Step 4 of 6</div>
+      <div className="step-title">Who are your competitors?</div>
+      <div className="step-subtitle">
+        Optional — add competitors you want to benchmark against.
+      </div>
+
+      <TagInput
+        tags={competitors}
+        onChange={onChange}
+        placeholder="e.g. Peachtree Financial"
+        hint="Press Enter or comma to add each competitor"
+      />
+
+      <div className="wiz-btn-actions">
+        <button className="wiz-btn-secondary" onClick={onBack} type="button">
+          Back
+        </button>
+        <button className="wiz-btn-primary" onClick={onNext} type="button">
+          Continue
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Main component ─────────────────────────────────────────────────────────
 
 export default function WizardPage() {
@@ -389,8 +489,40 @@ export default function WizardPage() {
                   onBack={() => setCurrentStep(1)}
                 />
               )}
-              {currentStep === 3 && <div>Step 3 coming soon</div>}
-              {currentStep === 4 && <div>Step 4 coming soon</div>}
+              {currentStep === 3 && (
+                <StepClaims
+                  products={state.products}
+                  claimsBrand={state.claims.brand}
+                  claimsProducts={state.claims.products}
+                  onChangeBrand={(tags) =>
+                    setState((prev) => ({
+                      ...prev,
+                      claims: { ...prev.claims, brand: tags },
+                    }))
+                  }
+                  onChangeProduct={(product, tags) =>
+                    setState((prev) => ({
+                      ...prev,
+                      claims: {
+                        ...prev.claims,
+                        products: { ...prev.claims.products, [product]: tags },
+                      },
+                    }))
+                  }
+                  onNext={() => setCurrentStep(4)}
+                  onBack={() => setCurrentStep(2)}
+                />
+              )}
+              {currentStep === 4 && (
+                <StepCompetitors
+                  competitors={state.competitors}
+                  onChange={(competitors) =>
+                    setState((prev) => ({ ...prev, competitors }))
+                  }
+                  onNext={() => setCurrentStep(5)}
+                  onBack={() => setCurrentStep(3)}
+                />
+              )}
               {currentStep === 5 && <div>Step 5 coming soon</div>}
               {currentStep === 6 && <div>Step 6 coming soon</div>}
             </div>
