@@ -35,7 +35,8 @@ test.describe('RPTD-03: Results page top bar chrome', () => {
     const backLink = page.getByRole('link', { name: /Dashboard/ })
     await expect(backLink).toBeVisible()
     // FAILS against current page.tsx (current class is text-ink/60)
-    await expect(backLink).not.toHaveClass(/text-ink/)
+    // Use word-boundary pattern to avoid matching "hover:text-ink"
+    await expect(backLink).not.toHaveClass(/(?<![:\w])text-ink(?![\/\w-])/)
     await expect(backLink).toHaveClass(/text-subtle/)
   })
 
