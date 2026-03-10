@@ -26,7 +26,7 @@ export function HeroSection() {
 
         {/* Headline */}
         <h1 className="font-sans text-5xl md:text-6xl text-ink leading-tight tracking-tight mb-6 max-w-2xl">
-          Finally know what AI says<br />about your brand —<br />
+          Finally know what AI says about your brand —{' '}
           <em className="not-italic text-ocean">and whether it&apos;s true.</em>
         </h1>
 
