@@ -148,6 +148,161 @@ function StepBrand({
   )
 }
 
+// ── TagInput ───────────────────────────────────────────────────────────────
+
+function TagInput({
+  tags,
+  onChange,
+  placeholder,
+  hint,
+}: {
+  tags: string[]
+  onChange: (tags: string[]) => void
+  placeholder?: string
+  hint?: string
+}) {
+  const [inputVal, setInputVal] = useState('')
+
+  function addTag(val: string) {
+    const trimmed = val.trim()
+    if (!trimmed || tags.includes(trimmed)) return
+    onChange([...tags, trimmed])
+    setInputVal('')
+  }
+
+  function removeTag(idx: number) {
+    onChange(tags.filter((_, i) => i !== idx))
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      addTag(inputVal)
+    }
+    if (e.key === 'Backspace' && inputVal === '' && tags.length > 0) {
+      removeTag(tags.length - 1)
+    }
+  }
+
+  return (
+    <div>
+      <div
+        className="wiz-tag-wrapper"
+        onClick={(e) =>
+          (e.currentTarget.querySelector('input') as HTMLInputElement)?.focus()
+        }
+      >
+        {tags.map((tag, i) => (
+          <span key={i} className="wiz-tag">
+            {tag}
+            <button
+              className="wiz-tag-remove"
+              onClick={() => removeTag(i)}
+              type="button"
+            >
+              ×
+            </button>
+          </span>
+        ))}
+        <input
+          className="wiz-tag-input"
+          value={inputVal}
+          onChange={(e) => setInputVal(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={() => addTag(inputVal)}
+          placeholder={
+            tags.length === 0 ? (placeholder ?? 'Type and press Enter') : ''
+          }
+        />
+      </div>
+      {hint && <p className="wiz-tag-hint">{hint}</p>}
+    </div>
+  )
+}
+
+// ── Step 2: Products ────────────────────────────────────────────────────────
+
+function StepProducts({
+  products,
+  onChange,
+  onNext,
+  onBack,
+}: {
+  products: string[]
+  onChange: (products: string[]) => void
+  onNext: () => void
+  onBack: () => void
+}) {
+  const [newProduct, setNewProduct] = useState('')
+
+  function addProduct() {
+    const trimmed = newProduct.trim()
+    if (!trimmed || products.includes(trimmed) || products.length >= 3) return
+    onChange([...products, trimmed])
+    setNewProduct('')
+  }
+
+  function removeProduct(idx: number) {
+    onChange(products.filter((_, i) => i !== idx))
+  }
+
+  return (
+    <div className="step-card">
+      <div className="step-eyebrow">Step 2 of 6</div>
+      <div className="step-title">What product lines do you track?</div>
+      <div className="step-subtitle">
+        Optional — add up to 3 product lines. You can configure more later.
+      </div>
+
+      {products.map((product, i) => (
+        <div key={i} className="wiz-product-item">
+          <span>{product}</span>
+          <button
+            className="wiz-product-remove"
+            onClick={() => removeProduct(i)}
+            type="button"
+          >
+            ×
+          </button>
+        </div>
+      ))}
+
+      <input
+        className="wiz-input"
+        placeholder="e.g. Personal Loans"
+        value={newProduct}
+        onChange={(e) => setNewProduct(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            addProduct()
+          }
+        }}
+      />
+      <button
+        className="wiz-add-btn"
+        onClick={addProduct}
+        disabled={products.length >= 3}
+        type="button"
+      >
+        + Add product
+      </button>
+      {products.length >= 3 && (
+        <p className="wiz-add-caption">Maximum 3 products reached</p>
+      )}
+
+      <div className="wiz-btn-actions">
+        <button className="wiz-btn-secondary" onClick={onBack} type="button">
+          Back
+        </button>
+        <button className="wiz-btn-primary" onClick={onNext} type="button">
+          Continue
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Main component ─────────────────────────────────────────────────────────
 
 export default function WizardPage() {
@@ -224,7 +379,16 @@ export default function WizardPage() {
                   }}
                 />
               )}
-              {currentStep === 2 && <div>Step 2 coming soon</div>}
+              {currentStep === 2 && (
+                <StepProducts
+                  products={state.products}
+                  onChange={(products) =>
+                    setState((prev) => ({ ...prev, products }))
+                  }
+                  onNext={() => setCurrentStep(3)}
+                  onBack={() => setCurrentStep(1)}
+                />
+              )}
               {currentStep === 3 && <div>Step 3 coming soon</div>}
               {currentStep === 4 && <div>Step 4 coming soon</div>}
               {currentStep === 5 && <div>Step 5 coming soon</div>}
