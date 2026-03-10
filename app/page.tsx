@@ -1,18 +1,14 @@
 import { Nav } from '@/components/Nav'
 import { Wordmark } from '@/components/Wordmark'
 import { EmailForm } from '@/components/EmailForm'
+import { HeroSection } from '@/components/HeroSection'
 
 export default function Home() {
   return (
     <>
       <Nav />
 
-      {/* Hero stub — Phase 26 fills this */}
-      <section id="hero" className="mx-auto max-w-5xl px-6 py-24">
-        <p className="font-mono text-sm text-text-secondary">
-          v1.0 · AI Brand Intelligence
-        </p>
-      </section>
+      <HeroSection />
 
       {/* Three Dimensions stub — Phase 27 fills this */}
       <section id="dimensions" className="bg-bg-subtle py-24">
