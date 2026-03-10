@@ -89,6 +89,6 @@ test.describe('E2E-02/03: run trigger and pipeline completion', () => {
     // E2E-02: Status reached a terminal state
     // E2E-03: That terminal state must be 'complete' — not 'failed'
     // A 'failed' status means a pipeline stage did not complete (LLM call, extraction, scoring, etc.)
-    expect(finalStatus).toBe('complete')
+    expect(await finalStatus.jsonValue()).toBe('complete')
   })
 })
