@@ -1,15 +1,8 @@
 import type { Metadata } from "next";
-import { DM_Serif_Display, Inter } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import "./globals.css";
-
-const dmSerifDisplay = DM_Serif_Display({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-dm-serif",
-  display: "swap",
-});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -17,8 +10,15 @@ const inter = Inter({
   display: "swap",
 });
 
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+  weight: ["400", "500"],
+});
+
 export const metadata: Metadata = {
-  title: "Surfaced",
+  title: "Surfaced — AI Brand Intelligence",
   description: "Know exactly how your brand appears in AI answers.",
 };
 
@@ -28,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${dmSerifDisplay.variable} ${inter.variable}`}>
-      <body className="bg-cream text-ink font-body antialiased">
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      <body className="bg-bg text-text-primary font-sans antialiased">
         {children}
         <Analytics />
         <SpeedInsights />
