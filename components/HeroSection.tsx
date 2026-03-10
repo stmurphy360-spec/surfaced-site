@@ -16,7 +16,7 @@ const PROOF_ITEMS = [
 
 export function HeroSection() {
   return (
-    <section id="hero" className="bg-cream">
+    <section id="hero" className="bg-bg">
       <div className="mx-auto max-w-2xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         {/* Eyebrow badge */}
         <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-ocean bg-green-light px-3 py-1.5 rounded-full mb-8">
