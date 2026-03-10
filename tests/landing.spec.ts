@@ -143,3 +143,43 @@ test.describe('DIM-02: dimension card data examples', () => {
     expect(count).toBeGreaterThan(0)
   })
 })
+
+// Task 2 implementation note:
+// - Methodology section must have id="how-it-works"
+// - Stat block must contain text "5×3" and "15"
+// - Prompt log container: data-testid="prompt-log"
+// - Each prompt row: data-testid="prompt-row" (exactly 5)
+
+test.describe('METH-01: stat block', () => {
+  test('section with id="how-it-works" is visible on page load', async ({ page }) => {
+    await page.goto('/')
+    const section = page.locator('#how-it-works')
+    await expect(section).toBeVisible()
+  })
+
+  test('stat block contains text "5×3"', async ({ page }) => {
+    await page.goto('/')
+    const section = page.locator('#how-it-works')
+    await expect(section.getByText('5×3')).toBeVisible()
+  })
+
+  test('stat block contains text "15"', async ({ page }) => {
+    await page.goto('/')
+    const section = page.locator('#how-it-works')
+    await expect(section.getByText('15')).toBeVisible()
+  })
+})
+
+test.describe('METH-02: prompt log illustration', () => {
+  test('prompt log illustration element is visible', async ({ page }) => {
+    await page.goto('/')
+    const promptLog = page.locator('[data-testid="prompt-log"]')
+    await expect(promptLog).toBeVisible()
+  })
+
+  test('prompt log shows exactly 5 prompt rows', async ({ page }) => {
+    await page.goto('/')
+    const promptRows = page.locator('[data-testid="prompt-row"]')
+    await expect(promptRows).toHaveCount(5)
+  })
+})
