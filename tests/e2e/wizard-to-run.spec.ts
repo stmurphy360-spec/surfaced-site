@@ -40,3 +40,55 @@ test.describe('E2E-01: wizard completion', () => {
     await expect(page).toHaveURL('/dashboard', { timeout: 15_000 })
   })
 })
+
+// E2E-02: Run trigger and status polling to complete
+// E2E-03: Real LLM pipeline executes all stages (validated by complete status)
+// Timeout: 10 minutes — full production prompt library with real OpenAI + Haiku calls
+test.describe('E2E-02/03: run trigger and pipeline completion', () => {
+  test('user triggers run from dashboard and polls to complete status', async ({ page }) => {
+    // 10-minute timeout — full LLM pipeline with real API calls
+    test.setTimeout(600_000)
+
+    await page.goto('/dashboard')
+
+    // Dashboard must be loaded (wizard completed in E2E-01 wrote real config)
+    // Assert Start Analysis button is visible — confirms idle state
+    await expect(page.getByRole('button', { name: 'Start Analysis' })).toBeVisible({ timeout: 15_000 })
+
+    // Click Start Analysis → triggers confirming state
+    await page.getByRole('button', { name: 'Start Analysis' }).click()
+
+    // Confirm dialog appears — click Confirm to POST /api/runs
+    await expect(page.getByRole('button', { name: 'Confirm' })).toBeVisible({ timeout: 10_000 })
+    await page.getByRole('button', { name: 'Confirm' }).click()
+
+    // Pipeline is now starting/running — assert running state UI appears
+    await expect(page.getByText('Analysis in progress...')).toBeVisible({ timeout: 30_000 })
+
+    // Poll /api/runs/active until status === 'complete' or 'failed'
+    // Uses page.waitForFunction which runs in browser context via fetch
+    // Polls every 10 seconds, up to the test timeout (600s)
+    const finalStatus = await page.waitForFunction(
+      async () => {
+        try {
+          const res = await fetch('/api/runs/active', { cache: 'no-store' })
+          const data = await res.json()
+          // Return status string once terminal — null keeps polling
+          if (data.status === 'complete' || data.status === 'failed') {
+            return data.status
+          }
+          return null
+        } catch {
+          return null
+        }
+      },
+      null,
+      { timeout: 600_000, polling: 10_000 }
+    )
+
+    // E2E-02: Status reached a terminal state
+    // E2E-03: That terminal state must be 'complete' — not 'failed'
+    // A 'failed' status means a pipeline stage did not complete (LLM call, extraction, scoring, etc.)
+    expect(finalStatus).toBe('complete')
+  })
+})
