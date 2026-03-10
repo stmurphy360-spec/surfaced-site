@@ -166,7 +166,7 @@ test.describe('METH-01: stat block', () => {
   test('stat block contains text "15"', async ({ page }) => {
     await page.goto('/')
     const section = page.locator('#how-it-works')
-    await expect(section.getByText('15')).toBeVisible()
+    await expect(section.getByText('15', { exact: true })).toBeVisible()
   })
 })
 

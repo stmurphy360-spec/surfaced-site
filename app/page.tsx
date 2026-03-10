@@ -4,6 +4,7 @@ import { EmailForm } from '@/components/EmailForm'
 import { HeroSection } from '@/components/HeroSection'
 import { DashboardPreview } from '@/components/DashboardPreview'
 import { ThreeDimensions } from '@/components/ThreeDimensions'
+import { Methodology } from '@/components/Methodology'
 
 export default function Home() {
   return (
@@ -14,11 +15,7 @@ export default function Home() {
       <DashboardPreview />
 
       <ThreeDimensions />
-
-      {/* Methodology stub — Phase 27 fills this */}
-      <section id="methodology" className="py-24">
-        <div className="mx-auto max-w-5xl px-6" />
-      </section>
+      <Methodology />
 
       {/* CTA stub — Phase 28 fills this */}
       <section id="cta" className="bg-bg-subtle py-24">
