@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import './wizard.css'
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -556,14 +556,17 @@ function StepReview({
 
 export default function WizardPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const forceShow = searchParams.get('force') === 'true'
   const [ready, setReady] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [state, setState] = useState<WizardState>(INITIAL_STATE)
   const [submitting, setSubmitting] = useState(false)
   const [brandError, setBrandError] = useState('')
 
-  // Bypass check: if brand_name already set, redirect to dashboard
+  // Bypass check: if brand_name already set, redirect to dashboard (unless ?force=true)
   useEffect(() => {
+    if (forceShow) { setReady(true); return }
     fetch('/api/config', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
@@ -571,7 +574,7 @@ export default function WizardPage() {
         else setReady(true)
       })
       .catch(() => setReady(true))
-  }, [router])
+  }, [router, forceShow])
 
   // Claims reconciliation: sync products into claims on step 3 entry
   useEffect(() => {
