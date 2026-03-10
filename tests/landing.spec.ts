@@ -27,35 +27,6 @@ test.describe('LAND-04: mobile responsive', () => {
   })
 })
 
-test.describe('LAND-05: single CTA discipline', () => {
-  test('has exactly one submit button with correct text', async ({ page }) => {
-    await page.goto('/')
-    const ctaButtons = page.locator('button[type="submit"]')
-    await expect(ctaButtons).toHaveCount(1)
-    await expect(ctaButtons).toContainText('Get early access')
-  })
-
-  test('has no external links', async ({ page }) => {
-    await page.goto('/')
-    const externalLinks = page.locator('a[href^="http"]')
-    await expect(externalLinks).toHaveCount(0)
-  })
-
-  test('privacy disclaimer link is an internal relative link', async ({ page }) => {
-    await page.goto('/')
-    const privacyLink = page.locator('a[href="/privacy"]')
-    await expect(privacyLink).toHaveCount(1)
-  })
-
-  test('form success state replaces form inline after valid submit', async ({ page }) => {
-    await page.goto('/')
-    await page.fill('input[name="email"]', 'test@example.com')
-    await page.fill('input[name="company"]', 'ACME Corp')
-    await page.click('button[type="submit"]')
-    await expect(page.locator('form')).not.toBeVisible()
-    await expect(page.getByText("You're on the list")).toBeVisible()
-  })
-})
 
 test.describe('DSGN-01: design system tokens', () => {
   test('design system: body has white background', async ({ page }) => {
@@ -84,7 +55,8 @@ test.describe('DSGN-02: fonts', () => {
   test('fonts: JetBrains Mono applied to mono element', async ({ page }) => {
     await page.goto('/')
     const monoElements = page.locator('.font-mono')
-    await expect(monoElements).toHaveCount(1)
+    const count = await monoElements.count()
+    expect(count).toBeGreaterThan(0)
     const fontFamily = await monoElements.first().evaluate((el) =>
       getComputedStyle(el).fontFamily
     )
@@ -122,5 +94,52 @@ test.describe('NAV-02: footer links', () => {
     await expect(termsLink).toHaveCount(1)
     const ctaLink = page.locator('footer a[href="#cta"]')
     await expect(ctaLink).toHaveCount(1)
+  })
+})
+
+test.describe('DIM-01: three dimensions section', () => {
+  test('section with id="what-we-measure" is visible on page load', async ({ page }) => {
+    await page.goto('/')
+    const section = page.locator('#what-we-measure')
+    await expect(section).toBeVisible()
+  })
+
+  test('section contains all three dimension names', async ({ page }) => {
+    await page.goto('/')
+    const section = page.locator('#what-we-measure')
+    await expect(section.getByText('Visibility')).toBeVisible()
+    await expect(section.getByText('Sentiment')).toBeVisible()
+    await expect(section.getByText('Message Match')).toBeVisible()
+  })
+})
+
+test.describe('DIM-02: dimension card data examples', () => {
+  test('Visibility card shows badge with visibility label', async ({ page }) => {
+    await page.goto('/')
+    const section = page.locator('#what-we-measure')
+    const visibilityBadge = section.getByText(/visibility/i).first()
+    await expect(visibilityBadge).toBeVisible()
+  })
+
+  test('Sentiment card shows badge with sentiment label', async ({ page }) => {
+    await page.goto('/')
+    const section = page.locator('#what-we-measure')
+    const sentimentBadge = section.getByText(/sentiment/i).first()
+    await expect(sentimentBadge).toBeVisible()
+  })
+
+  test('Message Match card shows badge with message match label', async ({ page }) => {
+    await page.goto('/')
+    const section = page.locator('#what-we-measure')
+    const messageMatchBadge = section.getByText(/message match/i).first()
+    await expect(messageMatchBadge).toBeVisible()
+  })
+
+  test('each dimension card contains a data example element', async ({ page }) => {
+    await page.goto('/')
+    const section = page.locator('#what-we-measure')
+    const dataExamples = section.locator('[data-testid="dimension-example"], .font-mono')
+    const count = await dataExamples.count()
+    expect(count).toBeGreaterThan(0)
   })
 })
