@@ -17,10 +17,26 @@ export default function Home() {
       <ThreeDimensions />
       <Methodology />
 
-      {/* CTA stub — Phase 28 fills this */}
-      <section id="cta" className="bg-bg-subtle py-24">
-        <div className="mx-auto max-w-5xl px-6">
+      <section id="cta" data-testid="section-cta" className="w-full bg-ocean py-20 md:py-28">
+        <div className="mx-auto max-w-2xl px-6 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 mb-8">
+            <span className="block h-2 w-2 rounded-full bg-amber-400 animate-pulse" aria-hidden="true" />
+            <span className="font-body text-sm text-cream/90">AI answers are forming brand impressions right now</span>
+          </div>
+          <h2 className="font-display text-3xl md:text-4xl text-cream leading-tight mb-4">
+            The brands that understand their AI presence in 2026 won&apos;t be scrambling in 2027.
+          </h2>
+          <p className="font-body text-cream/80 text-lg mb-10">
+            Surfaced is in early access. Request a slot now.
+          </p>
           <EmailForm />
+          <p className="font-body text-xs text-cream/60 mt-6 flex flex-wrap justify-center gap-x-4 gap-y-1">
+            <span>No credit card required</span>
+            <span aria-hidden="true">·</span>
+            <span>First report delivered in 48 hours</span>
+            <span aria-hidden="true">·</span>
+            <span>Cancel anytime</span>
+          </p>
         </div>
       </section>
 
