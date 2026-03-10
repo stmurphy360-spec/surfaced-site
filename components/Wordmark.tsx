@@ -1,7 +1,7 @@
 export function Wordmark() {
   return (
-    <span className="font-display text-2xl text-ink tracking-tight">
-      Surfaced
+    <span className="font-sans font-bold text-xl tracking-tight text-text-primary">
+      Surfaced<span className="text-ocean">.</span>
     </span>
-  );
+  )
 }
