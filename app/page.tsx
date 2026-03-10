@@ -2,6 +2,7 @@ import { Nav } from '@/components/Nav'
 import { Wordmark } from '@/components/Wordmark'
 import { EmailForm } from '@/components/EmailForm'
 import { HeroSection } from '@/components/HeroSection'
+import { DashboardPreview } from '@/components/DashboardPreview'
 
 export default function Home() {
   return (
@@ -9,6 +10,7 @@ export default function Home() {
       <Nav />
 
       <HeroSection />
+      <DashboardPreview />
 
       {/* Three Dimensions stub — Phase 27 fills this */}
       <section id="dimensions" className="bg-bg-subtle py-24">
