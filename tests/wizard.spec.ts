@@ -40,9 +40,42 @@ test.describe('WIZ-01: step 1 brand name', () => {
 // WIZ-02: Completing wizard writes valid config and redirects to /dashboard
 test.describe('WIZ-02: completion', () => {
   test('completing wizard redirects to /dashboard', async ({ page }) => {
-    await mockNoConfig(page)
+    // Stateful mock: GET returns empty before submit, valid brand after POST
+    let configSaved = false
+    await page.route('/api/config', async (route) => {
+      if (route.request().method() === 'POST') {
+        configSaved = true
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ ok: true }),
+        })
+      } else {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(
+            configSaved
+              ? { brand_name: 'Test Brand', competitors: {}, claims: {} }
+              : { brand_name: '' }
+          ),
+        })
+      }
+    })
     await page.goto('/wizard')
-    // FAILS: /wizard route does not exist yet
+    // Step 1: fill brand and continue
+    await page.getByPlaceholder(/brand name/i).fill('Test Brand')
+    await page.getByRole('button', { name: 'Continue' }).click()
+    // Step 2: skip products, continue
+    await page.getByRole('button', { name: 'Continue' }).click()
+    // Step 3: skip claims, continue
+    await page.getByRole('button', { name: 'Continue' }).click()
+    // Step 4: skip competitors, continue
+    await page.getByRole('button', { name: 'Continue' }).click()
+    // Step 5: model step (GPT-4o pre-selected), continue
+    await page.getByRole('button', { name: 'Continue' }).click()
+    // Step 6: review step, submit
+    await page.getByRole('button', { name: 'Launch Surfaced' }).click()
     await expect(page).toHaveURL('/dashboard', { timeout: 15000 })
   })
 })

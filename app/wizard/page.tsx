@@ -37,6 +37,15 @@ const STEPS = [
   { label: 'Review' },
 ]
 
+// ── LLM card data ──────────────────────────────────────────────────────────
+
+const LLM_CARDS = [
+  { id: 'gpt-4o', name: 'GPT-4o', desc: 'OpenAI', locked: false },
+  { id: 'claude', name: 'Claude', desc: 'Anthropic', locked: true },
+  { id: 'gemini', name: 'Gemini', desc: 'Google', locked: true },
+  { id: 'perplexity', name: 'Perplexity', desc: 'Perplexity AI', locked: true },
+]
+
 // ── Helper functions ───────────────────────────────────────────────────────
 
 function buildClaimsPayload(state: WizardState): Record<string, string[]> {
@@ -403,6 +412,146 @@ function StepCompetitors({
   )
 }
 
+// ── Step 5: Models ─────────────────────────────────────────────────────────
+
+function StepModels({
+  onNext,
+  onBack,
+}: {
+  onNext: () => void
+  onBack: () => void
+}) {
+  return (
+    <div className="step-card">
+      <div className="step-eyebrow">Step 5 of 6</div>
+      <div className="step-title">Choose your analysis model</div>
+      <div className="step-subtitle">
+        More models coming soon. GPT-4o is selected by default.
+      </div>
+
+      <div className="wiz-llm-grid">
+        {LLM_CARDS.map((card) => (
+          <div
+            key={card.id}
+            className={`wiz-llm-card${!card.locked ? ' selected' : ''}`}
+          >
+            <div className="wiz-llm-card-name">{card.name}</div>
+            <div className="wiz-llm-card-desc">{card.desc}</div>
+            {card.locked && (
+              <span className="wiz-coming-soon">Coming soon</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="wiz-btn-actions">
+        <button className="wiz-btn-secondary" onClick={onBack} type="button">
+          Back
+        </button>
+        <button className="wiz-btn-primary" onClick={onNext} type="button">
+          Continue
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Step 6: Review ─────────────────────────────────────────────────────────
+
+function StepReview({
+  state,
+  submitting,
+  onSubmit,
+  onBack,
+}: {
+  state: WizardState
+  submitting: boolean
+  onSubmit: () => void
+  onBack: () => void
+}) {
+  const brandClaimsCount = state.claims.brand.length
+  const productClaimEntries = state.products.map((p) => ({
+    name: p,
+    count: (state.claims.products[p] ?? []).length,
+  }))
+  const hasAnyClaims =
+    brandClaimsCount > 0 || productClaimEntries.some((e) => e.count > 0)
+
+  return (
+    <div className="step-card">
+      <div className="step-eyebrow">Step 6 of 6</div>
+      <div className="step-title">Review your setup</div>
+      <div className="step-subtitle">
+        Everything looks good? Launch Surfaced to start tracking.
+      </div>
+
+      <div className="wiz-review-section">
+        <div className="wiz-review-label">BRAND NAME</div>
+        <div className="wiz-review-value">{state.brand}</div>
+      </div>
+
+      <div className="wiz-review-section">
+        <div className="wiz-review-label">PRODUCT LINES</div>
+        <div className="wiz-review-value">
+          {state.products.length > 0 ? (
+            state.products.join(', ')
+          ) : (
+            <span className="wiz-review-empty">None added</span>
+          )}
+        </div>
+      </div>
+
+      <div className="wiz-review-section">
+        <div className="wiz-review-label">CLAIMS</div>
+        <div className="wiz-review-value">
+          {hasAnyClaims ? (
+            <>
+              <div>Brand: {brandClaimsCount} claim(s)</div>
+              {productClaimEntries.map((e) => (
+                <div key={e.name}>
+                  {e.name}: {e.count} claim(s)
+                </div>
+              ))}
+            </>
+          ) : (
+            <span className="wiz-review-empty">None added</span>
+          )}
+        </div>
+      </div>
+
+      <div className="wiz-review-section">
+        <div className="wiz-review-label">COMPETITORS</div>
+        <div className="wiz-review-value">
+          {state.competitors.length > 0 ? (
+            state.competitors.join(', ')
+          ) : (
+            <span className="wiz-review-empty">None added</span>
+          )}
+        </div>
+      </div>
+
+      <div className="wiz-review-section">
+        <div className="wiz-review-label">ANALYSIS MODEL</div>
+        <div className="wiz-review-value">GPT-4o</div>
+      </div>
+
+      <div className="wiz-btn-actions">
+        <button className="wiz-btn-secondary" onClick={onBack} type="button">
+          Back
+        </button>
+        <button
+          className="wiz-btn-primary"
+          onClick={onSubmit}
+          disabled={submitting}
+          type="button"
+        >
+          {submitting ? 'Setting up...' : 'Launch Surfaced'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Main component ─────────────────────────────────────────────────────────
 
 export default function WizardPage() {
@@ -442,11 +591,29 @@ export default function WizardPage() {
     })
   }, [currentStep])
 
-  // Suppress unused-variable warnings for helpers used in later plans
-  void buildClaimsPayload
-  void buildCompetitorsPayload
-  void submitting
-  void setSubmitting
+  async function handleSubmit() {
+    setSubmitting(true)
+    try {
+      const payload = {
+        brand_name: state.brand,
+        claims: buildClaimsPayload(state),
+        competitors: buildCompetitorsPayload(state),
+        product_lines: state.products,
+        llms: state.llms,
+      }
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error('Config save failed')
+      router.replace('/dashboard')
+    } catch (err) {
+      console.error('Wizard submit failed:', err)
+      setSubmitting(false)
+      // Don't crash — user can retry by clicking Launch again
+    }
+  }
 
   // Always render wizard-root so CSS custom properties are available on mount.
   // Content is hidden until the bypass check completes (to avoid flash before redirect).
@@ -523,8 +690,20 @@ export default function WizardPage() {
                   onBack={() => setCurrentStep(3)}
                 />
               )}
-              {currentStep === 5 && <div>Step 5 coming soon</div>}
-              {currentStep === 6 && <div>Step 6 coming soon</div>}
+              {currentStep === 5 && (
+                <StepModels
+                  onNext={() => setCurrentStep(6)}
+                  onBack={() => setCurrentStep(4)}
+                />
+              )}
+              {currentStep === 6 && (
+                <StepReview
+                  state={state}
+                  submitting={submitting}
+                  onSubmit={handleSubmit}
+                  onBack={() => setCurrentStep(5)}
+                />
+              )}
             </div>
           </div>
         </>
