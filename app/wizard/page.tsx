@@ -276,27 +276,29 @@ function StepProducts({
         </div>
       ))}
 
-      <input
-        className="wiz-input"
-        placeholder="e.g. Personal Loans"
-        value={newProduct}
-        onChange={(e) => setNewProduct(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault()
-            addProduct()
-          }
-        }}
-      />
-      <button
-        className="wiz-add-btn"
-        onClick={addProduct}
-        disabled={products.length >= 3}
-        type="button"
-      >
-        + Add product
-      </button>
-      {products.length >= 3 && (
+      {products.length < 3 ? (
+        <>
+          <input
+            className="wiz-input"
+            placeholder="e.g. Personal Loans"
+            value={newProduct}
+            onChange={(e) => setNewProduct(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                addProduct()
+              }
+            }}
+          />
+          <button
+            className="wiz-add-btn"
+            onClick={addProduct}
+            type="button"
+          >
+            + Add product
+          </button>
+        </>
+      ) : (
         <p className="wiz-add-caption">Maximum 3 products reached</p>
       )}
 
