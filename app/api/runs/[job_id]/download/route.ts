@@ -11,9 +11,16 @@ export async function GET(
   const { searchParams } = new URL(req.url)
   const file = searchParams.get('file')
 
-  const upstreamPath = file === 'csv-bundle'
-    ? `/files/${job_id}/csv-bundle`
-    : `/files/${job_id}/report.html`
+  let upstreamPath: string
+  if (file === 'csv-bundle') {
+    upstreamPath = `/files/${job_id}/csv-bundle`
+  } else if (file === 'visibility-csv') {
+    upstreamPath = `/files/${job_id}/visibility.csv`
+  } else if (file === 'messaging-csv') {
+    upstreamPath = `/files/${job_id}/ideal_content.csv`
+  } else {
+    upstreamPath = `/files/${job_id}/report.html`
+  }
 
   try {
     const res = await fetch(`${PYTHON_API}${upstreamPath}`, {
@@ -24,7 +31,7 @@ export async function GET(
       return NextResponse.json({ error: 'File not available' }, { status: res.status })
     }
     const buffer = await res.arrayBuffer()
-    const contentDisposition = file === 'csv-bundle'
+    const contentDisposition = (file === 'csv-bundle' || file === 'visibility-csv' || file === 'messaging-csv')
       ? (res.headers.get('content-disposition') ?? 'attachment')
       : 'inline'
     return new Response(buffer, {
