@@ -72,10 +72,10 @@ const resultBars = [
 
 export function Methodology() {
   return (
-    <section id="how-it-works" className="bg-cream py-24 border-t border-gray-200">
+    <section id="how-it-works" className="bg-cream py-14 border-t border-gray-200">
       <span id="methodology" />
       <div className="mx-auto max-w-5xl px-6">
-        <h2 className="text-2xl font-semibold text-ink mb-10">How we measure it</h2>
+        <h2 className="text-2xl font-semibold text-ink mb-8">How we measure it</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
 
           {/* Left: stat block */}

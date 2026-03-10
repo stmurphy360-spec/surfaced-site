@@ -18,7 +18,7 @@ function DimensionCard({
   badgeClass,
 }: DimensionProps) {
   return (
-    <div className="bg-white p-10 hover:bg-gray-50 transition-colors">
+    <div className="bg-white p-7 hover:bg-gray-50 transition-colors">
       <p className="font-mono text-xs text-subtle uppercase tracking-widest mb-5">{num}</p>
       <h3 className="text-xl font-bold text-ink mb-2 tracking-tight">{title}</h3>
       <p className="text-sm text-subtle leading-relaxed mb-5">{description}</p>
@@ -68,14 +68,15 @@ const dimensions: DimensionProps[] = [
 
 export function ThreeDimensions() {
   return (
-    <section id="what-we-measure" className="bg-white py-24">
+    <section id="what-we-measure" className="bg-white py-14">
       {/* Scroll anchor for nav link #dimensions */}
       <span id="dimensions" className="sr-only" />
       <div className="mx-auto max-w-5xl px-6">
-        <h2 className="font-sans text-3xl font-bold text-ink tracking-tight mb-12">
+        <h2 className="font-sans text-3xl font-bold text-ink tracking-tight mb-8">
           What we measure
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-gray-200 border border-gray-200 rounded-xl overflow-hidden">
+
           {dimensions.map((dim) => (
             <DimensionCard key={dim.num} {...dim} />
           ))}
