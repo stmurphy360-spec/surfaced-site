@@ -1,15 +1,61 @@
 /* app/globals.css */
 @import "tailwindcss";
 
-@theme {
-  /* Brand Colors */
-  --color-cream:      #FAF8F5;
-  --color-ink:        #1A1A1A;
-  --color-ocean:      #2563eb;
-  --color-ocean-dark: #1D4ED8;
-  --color-subtle:     #6B7280;
+@theme inline {
+  /* Surface colors */
+  --color-bg:              #ffffff;
+  --color-bg-subtle:       #f8f9fb;
+  --color-bg-subtle2:      #f1f3f7;
 
-  /* Typography — CSS vars injected by next/font/google on <html> */
-  --font-display: var(--font-dm-serif), Georgia, "Times New Roman", serif;
-  --font-body:    var(--font-inter), system-ui, -apple-system, sans-serif;
+  /* Border colors */
+  --color-border:          #e4e7ed;
+  --color-border-strong:   #cbd0db;
+
+  /* Text colors */
+  --color-text-primary:    #0f1117;
+  --color-text-secondary:  #4b5568;
+  --color-text-tertiary:   #8892a4;
+
+  /* Accent — kept as ocean/ocean-dark per user decision */
+  --color-ocean:           #2563eb;
+  --color-ocean-dark:      #1d4ed8;
+  --color-ocean-light:     #eff3ff;
+  --color-ocean-light2:    #dbeafe;
+
+  /* Legacy aliases for existing components (wizard, results page) */
+  --color-ink:             #0f1117;
+  --color-subtle:          #4b5568;
+  --color-cream:           #f8f9fb;
+
+  /* Semantic */
+  --color-green:           #059669;
+  --color-green-light:     #d1fae5;
+  --color-amber:           #d97706;
+  --color-amber-light:     #fef3c7;
+  --color-red:             #dc2626;
+  --color-red-light:       #fee2e2;
+
+  /* Typography — @theme inline required to dereference next/font CSS vars */
+  --font-sans: var(--font-inter), -apple-system, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), 'Courier New', monospace;
+
+  /* Radius tokens */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Eyebrow pulse animation — used in Phase 26 Hero */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(0.85); }
 }
