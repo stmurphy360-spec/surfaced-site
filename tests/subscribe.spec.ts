@@ -1,10 +1,9 @@
-// Wave 0: These tests define the EMAIL-01 contract.
-// They will fail on "error state" test until Wave 1 wires real fetch to /api/subscribe.
+// Wave 0: These tests define the TEST-03 subscribe flow contract.
 // Run: npx playwright test tests/subscribe.spec.ts (dev server must be on localhost:3000)
 
 import { test, expect } from '@playwright/test'
 
-test.describe('EMAIL-01: email subscribe form', () => {
+test.describe('TEST-03: subscribe flow', () => {
   test('form success state replaces form inline after valid submit', async ({ page }) => {
     // Mock /api/subscribe before page loads so the route is registered when fetch fires
     await page.route('/api/subscribe', async (route) => {
@@ -20,8 +19,8 @@ test.describe('EMAIL-01: email subscribe form', () => {
     await page.fill('input[name="company"]', 'Acme Corp')
     await page.click('button[type="submit"]')
 
-    await expect(page.locator('form')).not.toBeVisible()
-    await expect(page.getByText("You're on the list")).toBeVisible()
+    await expect(page.getByTestId('section-cta').locator('form')).not.toBeVisible()
+    await expect(page.getByText("You're on the list", { exact: false })).toBeVisible()
   })
 
   test('error state shows message and retains field values on 500 response', async ({ page }) => {
@@ -40,7 +39,7 @@ test.describe('EMAIL-01: email subscribe form', () => {
     await page.click('button[type="submit"]')
 
     // Form must remain visible (not replaced by success state)
-    await expect(page.locator('form')).toBeVisible()
+    await expect(page.getByTestId('section-cta').locator('form')).toBeVisible()
     // Error message must appear
     await expect(page.getByText('Something went wrong. Please try again.')).toBeVisible()
     // Email field value must be retained
@@ -62,7 +61,7 @@ test.describe('EMAIL-01: email subscribe form', () => {
     await page.fill('input[name="company"]', 'Acme Corp')
     await page.click('button[type="submit"]')
 
-    await expect(page.locator('form')).not.toBeVisible()
-    await expect(page.getByText("You're on the list")).toBeVisible()
+    await expect(page.getByTestId('section-cta').locator('form')).not.toBeVisible()
+    await expect(page.getByText("You're on the list", { exact: false })).toBeVisible()
   })
 })
