@@ -293,6 +293,7 @@ function StepProducts({
           <button
             className="wiz-add-btn"
             onClick={addProduct}
+            disabled={!newProduct.trim()}
             type="button"
           >
             + Add product
