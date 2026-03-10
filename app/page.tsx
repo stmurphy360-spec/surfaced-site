@@ -3,6 +3,7 @@ import { Wordmark } from '@/components/Wordmark'
 import { EmailForm } from '@/components/EmailForm'
 import { HeroSection } from '@/components/HeroSection'
 import { DashboardPreview } from '@/components/DashboardPreview'
+import { ThreeDimensions } from '@/components/ThreeDimensions'
 
 export default function Home() {
   return (
@@ -12,10 +13,7 @@ export default function Home() {
       <HeroSection />
       <DashboardPreview />
 
-      {/* Three Dimensions stub — Phase 27 fills this */}
-      <section id="dimensions" className="bg-bg-subtle py-24">
-        <div className="mx-auto max-w-5xl px-6" />
-      </section>
+      <ThreeDimensions />
 
       {/* Methodology stub — Phase 27 fills this */}
       <section id="methodology" className="py-24">

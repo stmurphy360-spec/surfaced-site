@@ -107,9 +107,9 @@ test.describe('DIM-01: three dimensions section', () => {
   test('section contains all three dimension names', async ({ page }) => {
     await page.goto('/')
     const section = page.locator('#what-we-measure')
-    await expect(section.getByText('Visibility')).toBeVisible()
-    await expect(section.getByText('Sentiment')).toBeVisible()
-    await expect(section.getByText('Message Match')).toBeVisible()
+    await expect(section.getByRole('heading', { name: 'Visibility' })).toBeVisible()
+    await expect(section.getByRole('heading', { name: 'Sentiment' })).toBeVisible()
+    await expect(section.getByRole('heading', { name: 'Message Match' })).toBeVisible()
   })
 })
 
