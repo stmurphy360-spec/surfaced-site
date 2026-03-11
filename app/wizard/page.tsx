@@ -13,7 +13,7 @@ type WizardState = {
     brand: string[]
     products: Record<string, string[]>
   }
-  competitors: string[]
+  competitors: Record<string, string[]>
   llms: string[]
 }
 
@@ -24,7 +24,7 @@ const INITIAL_STATE: WizardState = {
     brand: [],
     products: {},
   },
-  competitors: [],
+  competitors: {},
   llms: ['gpt-4o'],
 }
 
@@ -54,15 +54,6 @@ function buildClaimsPayload(state: WizardState): Record<string, string[]> {
     claims[p] = state.claims.products[p] ?? []
   })
   return claims
-}
-
-function buildCompetitorsPayload(state: WizardState): Record<string, string[]> {
-  if (state.products.length === 0) return { brand: state.competitors }
-  const competitors: Record<string, string[]> = {}
-  state.products.forEach((p) => {
-    competitors[p] = state.competitors
-  })
-  return competitors
 }
 
 // ── Sub-components ─────────────────────────────────────────────────────────
@@ -378,38 +369,45 @@ function StepClaims({
 // ── Step 4: Competitors ────────────────────────────────────────────────────
 
 function StepCompetitors({
+  products,
   competitors,
   onChange,
   onNext,
   onBack,
 }: {
-  competitors: string[]
-  onChange: (competitors: string[]) => void
+  products: string[]
+  competitors: Record<string, string[]>
+  onChange: (product: string, tags: string[]) => void
   onNext: () => void
   onBack: () => void
 }) {
+  const keys = products.length === 0 ? ['brand'] : products
+
   return (
     <div className="step-card">
       <div className="step-eyebrow">Step 4 of 6</div>
       <div className="step-title">Who are your competitors?</div>
       <div className="step-subtitle">
-        Optional — add competitors you want to benchmark against.
+        Optional — add competitors for each product line you're tracking.
       </div>
 
-      <TagInput
-        tags={competitors}
-        onChange={onChange}
-        placeholder="e.g. Peachtree Financial"
-        hint="Press Enter or comma to add each competitor"
-      />
+      {keys.map((key) => (
+        <div key={key}>
+          <div className="wiz-section-label">
+            {key === 'brand' ? 'BRAND' : key.toUpperCase()}
+          </div>
+          <TagInput
+            tags={competitors[key] ?? []}
+            onChange={(tags) => onChange(key, tags)}
+            placeholder="e.g. Competitor Name"
+            hint="Press Enter or comma to add each competitor"
+          />
+        </div>
+      ))}
 
       <div className="wiz-btn-actions">
-        <button className="wiz-btn-secondary" onClick={onBack} type="button">
-          Back
-        </button>
-        <button className="wiz-btn-primary" onClick={onNext} type="button">
-          Continue
-        </button>
+        <button className="wiz-btn-secondary" onClick={onBack} type="button">Back</button>
+        <button className="wiz-btn-primary" onClick={onNext} type="button">Continue</button>
       </div>
     </div>
   )
@@ -525,8 +523,10 @@ function StepReview({
       <div className="wiz-review-section">
         <div className="wiz-review-label">COMPETITORS</div>
         <div className="wiz-review-value">
-          {state.competitors.length > 0 ? (
-            state.competitors.join(', ')
+          {Object.values(state.competitors).some((arr) => arr.length > 0) ? (
+            Object.entries(state.competitors).map(([key, arr]) => (
+              <div key={key}>{key === 'brand' ? 'Brand' : key}: {arr.length} competitor(s)</div>
+            ))
           ) : (
             <span className="wiz-review-empty">None added</span>
           )}
@@ -596,13 +596,34 @@ export default function WizardPage() {
     })
   }, [currentStep])
 
+  // Competitors reconciliation: sync products into competitors on step 4 entry
+  useEffect(() => {
+    if (currentStep !== 4) return
+    setState((prev) => {
+      const next = { ...prev, competitors: { ...prev.competitors } }
+      // Remove keys for product lines no longer in state.products
+      Object.keys(next.competitors).forEach((p) => {
+        if (p !== 'brand' && !next.products.includes(p)) delete next.competitors[p]
+      })
+      // Add empty entry for each product line not yet in competitors
+      if (next.products.length === 0) {
+        if (!next.competitors['brand']) next.competitors['brand'] = []
+      } else {
+        next.products.forEach((p) => {
+          if (!next.competitors[p]) next.competitors[p] = []
+        })
+      }
+      return next
+    })
+  }, [currentStep])
+
   async function handleSubmit() {
     setSubmitting(true)
     try {
       const payload = {
         brand_name: state.brand,
         claims: buildClaimsPayload(state),
-        competitors: buildCompetitorsPayload(state),
+        competitors: state.competitors,
         product_lines: state.products,
         llms: state.llms,
       }
@@ -687,9 +708,13 @@ export default function WizardPage() {
               )}
               {currentStep === 4 && (
                 <StepCompetitors
+                  products={state.products}
                   competitors={state.competitors}
-                  onChange={(competitors) =>
-                    setState((prev) => ({ ...prev, competitors }))
+                  onChange={(product, tags) =>
+                    setState((prev) => ({
+                      ...prev,
+                      competitors: { ...prev.competitors, [product]: tags },
+                    }))
                   }
                   onNext={() => setCurrentStep(5)}
                   onBack={() => setCurrentStep(3)}
