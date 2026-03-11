@@ -14,6 +14,7 @@ type WizardState = {
     products: Record<string, string[]>
   }
   competitors: Record<string, string[]>
+  skippedProductLines: string[]
   llms: string[]
 }
 
@@ -25,6 +26,7 @@ const INITIAL_STATE: WizardState = {
     products: {},
   },
   competitors: {},
+  skippedProductLines: [],
   llms: ['gpt-4o'],
 }
 
@@ -224,12 +226,16 @@ function TagInput({
 
 function StepProducts({
   products,
+  skippedProductLines,
   onChange,
+  onToggleSkip,
   onNext,
   onBack,
 }: {
   products: string[]
+  skippedProductLines: string[]
   onChange: (products: string[]) => void
+  onToggleSkip: (product: string) => void
   onNext: () => void
   onBack: () => void
 }) {
@@ -254,18 +260,30 @@ function StepProducts({
         Optional — add up to 3 product lines. You can configure more later.
       </div>
 
-      {products.map((product, i) => (
-        <div key={i} className="wiz-product-item">
-          <span>{product}</span>
-          <button
-            className="wiz-product-remove"
-            onClick={() => removeProduct(i)}
-            type="button"
-          >
-            ×
-          </button>
-        </div>
-      ))}
+      {products.map((product, i) => {
+        const isSkipped = skippedProductLines.includes(product)
+        return (
+          <div key={i} className="wiz-product-item">
+            <span>{product}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                className={`wiz-skip-toggle ${isSkipped ? 'wiz-skip-toggle--skipped' : 'wiz-skip-toggle--active'}`}
+                onClick={() => onToggleSkip(product)}
+                type="button"
+              >
+                {isSkipped ? 'Skipped' : 'Skip'}
+              </button>
+              <button
+                className="wiz-product-remove"
+                onClick={() => removeProduct(i)}
+                type="button"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )
+      })}
 
       {products.length < 3 ? (
         <>
@@ -675,8 +693,24 @@ export default function WizardPage() {
               {currentStep === 2 && (
                 <StepProducts
                   products={state.products}
+                  skippedProductLines={state.skippedProductLines}
                   onChange={(products) =>
-                    setState((prev) => ({ ...prev, products }))
+                    setState((prev) => ({
+                      ...prev,
+                      products,
+                      // Remove any skipped lines that are no longer in products
+                      skippedProductLines: prev.skippedProductLines.filter((s) =>
+                        products.includes(s)
+                      ),
+                    }))
+                  }
+                  onToggleSkip={(product) =>
+                    setState((prev) => ({
+                      ...prev,
+                      skippedProductLines: prev.skippedProductLines.includes(product)
+                        ? prev.skippedProductLines.filter((s) => s !== product)
+                        : [...prev.skippedProductLines, product],
+                    }))
                   }
                   onNext={() => setCurrentStep(3)}
                   onBack={() => setCurrentStep(1)}
