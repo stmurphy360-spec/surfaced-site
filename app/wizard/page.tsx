@@ -271,7 +271,7 @@ function StepProducts({
         <>
           <input
             className="wiz-input"
-            placeholder="e.g. Personal Loans"
+            placeholder="e.g. Home Insurance"
             value={newProduct}
             onChange={(e) => setNewProduct(e.target.value)}
             onKeyDown={(e) => {
@@ -338,7 +338,7 @@ function StepClaims({
       <TagInput
         tags={claimsBrand}
         onChange={onChangeBrand}
-        placeholder="e.g. We pay structured settlements fast"
+        placeholder="e.g. We're the trusted leader in our category"
         hint="Press Enter or comma to add each claim"
       />
 
