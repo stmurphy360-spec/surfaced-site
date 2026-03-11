@@ -133,6 +133,7 @@ function StepBrand({
         placeholder="Enter your brand name"
         value={brand}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter' && brand.trim()) { e.preventDefault(); onNext() } }}
         autoFocus
       />
       {error && <p className="wiz-input-error-msg">{error}</p>}
@@ -157,11 +158,13 @@ function TagInput({
   onChange,
   placeholder,
   hint,
+  onEnterEmpty,
 }: {
   tags: string[]
   onChange: (tags: string[]) => void
   placeholder?: string
   hint?: string
+  onEnterEmpty?: () => void
 }) {
   const [inputVal, setInputVal] = useState('')
 
@@ -179,7 +182,11 @@ function TagInput({
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault()
-      addTag(inputVal)
+      if (inputVal.trim()) {
+        addTag(inputVal)
+      } else if (e.key === 'Enter' && onEnterEmpty) {
+        onEnterEmpty()
+      }
     }
     if (e.key === 'Backspace' && inputVal === '' && tags.length > 0) {
       removeTag(tags.length - 1)
@@ -252,6 +259,16 @@ function StepProducts({
     onChange(products.filter((_, i) => i !== idx))
   }
 
+  // Allow Enter to advance when input is hidden (at 3 products)
+  useEffect(() => {
+    if (products.length < 3) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Enter') { e.preventDefault(); onNext() }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [products.length, onNext])
+
   return (
     <div className="step-card">
       <div className="step-eyebrow">Step 2 of 6</div>
@@ -295,7 +312,8 @@ function StepProducts({
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault()
-                addProduct()
+                if (newProduct.trim()) addProduct()
+                else onNext()
               }
             }}
           />
@@ -360,10 +378,11 @@ function StepClaims({
         onChange={onChangeBrand}
         placeholder="e.g. We're the trusted leader in our category"
         hint="Press Enter or comma to add each claim"
+        onEnterEmpty={products.length === 0 ? onNext : undefined}
       />
 
       {products.length > 0 &&
-        products.map((product) => (
+        products.map((product, i) => (
           <div
             key={product}
             className={skippedProductLines.includes(product) ? 'wiz-section-disabled' : ''}
@@ -373,6 +392,7 @@ function StepClaims({
               tags={claimsProducts[product] ?? []}
               onChange={(tags) => onChangeProduct(product, tags)}
               hint="Press Enter or comma to add each claim"
+              onEnterEmpty={i === products.length - 1 ? onNext : undefined}
             />
           </div>
         ))}
@@ -406,17 +426,17 @@ function StepCompetitors({
   onNext: () => void
   onBack: () => void
 }) {
-  const keys = products.length === 0 ? ['brand'] : products
+  const keys = ['brand', ...products]
 
   return (
     <div className="step-card">
       <div className="step-eyebrow">Step 4 of 6</div>
       <div className="step-title">Who are your competitors?</div>
       <div className="step-subtitle">
-        Optional — add competitors for each product line you're tracking.
+        Optional — add brand-wide competitors and competitors per product line.
       </div>
 
-      {keys.map((key) => (
+      {keys.map((key, i) => (
         <div
           key={key}
           className={skippedProductLines.includes(key) ? 'wiz-section-disabled' : ''}
@@ -429,6 +449,7 @@ function StepCompetitors({
             onChange={(tags) => onChange(key, tags)}
             placeholder="e.g. Competitor Name"
             hint="Press Enter or comma to add each competitor"
+            onEnterEmpty={i === keys.length - 1 ? onNext : undefined}
           />
         </div>
       ))}
@@ -450,6 +471,14 @@ function StepModels({
   onNext: () => void
   onBack: () => void
 }) {
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Enter') { e.preventDefault(); onNext() }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onNext])
+
   return (
     <div className="step-card">
       <div className="step-eyebrow">Step 5 of 6</div>
@@ -585,15 +614,19 @@ function StepReview({
           </button>
         </div>
         <div className="wiz-review-value">
-          {state.products.length > 0 ? (
-            state.products.map((product) => (
-              <div key={product}>
-                {product}: {(state.competitors[product] ?? []).length} competitor(s)
-              </div>
-            ))
-          ) : (
-            <span className="wiz-review-empty">None added</span>
-          )}
+          {(() => {
+            const allKeys = ['brand', ...state.products]
+            const hasAny = allKeys.some((k) => (state.competitors[k] ?? []).length > 0)
+            return hasAny ? (
+              allKeys.map((key) => (
+                <div key={key}>
+                  {key === 'brand' ? 'Brand' : key}: {(state.competitors[key] ?? []).length} competitor(s)
+                </div>
+              ))
+            ) : (
+              <span className="wiz-review-empty">None added</span>
+            )
+          })()}
         </div>
       </div>
 
@@ -670,18 +703,16 @@ export default function WizardPage() {
     if (currentStep !== 4) return
     setState((prev) => {
       const next = { ...prev, competitors: { ...prev.competitors } }
-      // Remove keys for product lines no longer in state.products
+      // Always ensure brand key exists
+      if (!next.competitors['brand']) next.competitors['brand'] = []
+      // Remove stale product-line keys
       Object.keys(next.competitors).forEach((p) => {
         if (p !== 'brand' && !next.products.includes(p)) delete next.competitors[p]
       })
       // Add empty entry for each product line not yet in competitors
-      if (next.products.length === 0) {
-        if (!next.competitors['brand']) next.competitors['brand'] = []
-      } else {
-        next.products.forEach((p) => {
-          if (!next.competitors[p]) next.competitors[p] = []
-        })
-      }
+      next.products.forEach((p) => {
+        if (!next.competitors[p]) next.competitors[p] = []
+      })
       return next
     })
   }, [currentStep])
