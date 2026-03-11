@@ -328,6 +328,7 @@ function StepProducts({
 
 function StepClaims({
   products,
+  skippedProductLines,
   claimsBrand,
   claimsProducts,
   onChangeBrand,
@@ -336,6 +337,7 @@ function StepClaims({
   onBack,
 }: {
   products: string[]
+  skippedProductLines: string[]
   claimsBrand: string[]
   claimsProducts: Record<string, string[]>
   onChangeBrand: (claims: string[]) => void
@@ -362,7 +364,10 @@ function StepClaims({
 
       {products.length > 0 &&
         products.map((product) => (
-          <div key={product}>
+          <div
+            key={product}
+            className={skippedProductLines.includes(product) ? 'wiz-section-disabled' : ''}
+          >
             <div className="wiz-section-label">{product.toUpperCase()}</div>
             <TagInput
               tags={claimsProducts[product] ?? []}
@@ -388,12 +393,14 @@ function StepClaims({
 
 function StepCompetitors({
   products,
+  skippedProductLines,
   competitors,
   onChange,
   onNext,
   onBack,
 }: {
   products: string[]
+  skippedProductLines: string[]
   competitors: Record<string, string[]>
   onChange: (product: string, tags: string[]) => void
   onNext: () => void
@@ -410,7 +417,10 @@ function StepCompetitors({
       </div>
 
       {keys.map((key) => (
-        <div key={key}>
+        <div
+          key={key}
+          className={skippedProductLines.includes(key) ? 'wiz-section-disabled' : ''}
+        >
           <div className="wiz-section-label">
             {key === 'brand' ? 'BRAND' : key.toUpperCase()}
           </div>
@@ -482,11 +492,13 @@ function StepReview({
   submitting,
   onSubmit,
   onBack,
+  onEditStep,
 }: {
   state: WizardState
   submitting: boolean
   onSubmit: () => void
   onBack: () => void
+  onEditStep: (step: number) => void
 }) {
   const brandClaimsCount = state.claims.brand.length
   const productClaimEntries = state.products.map((p) => ({
@@ -495,6 +507,13 @@ function StepReview({
   }))
   const hasAnyClaims =
     brandClaimsCount > 0 || productClaimEntries.some((e) => e.count > 0)
+
+  const activeProducts = state.products.filter(
+    (p) => !state.skippedProductLines.includes(p)
+  )
+  const skippedProducts = state.products.filter((p) =>
+    state.skippedProductLines.includes(p)
+  )
 
   return (
     <div className="step-card">
@@ -505,15 +524,30 @@ function StepReview({
       </div>
 
       <div className="wiz-review-section">
-        <div className="wiz-review-label">BRAND NAME</div>
+        <div className="wiz-review-label">
+          BRAND NAME
+          <button className="wiz-edit-link" onClick={() => onEditStep(1)} type="button">
+            Edit
+          </button>
+        </div>
         <div className="wiz-review-value">{state.brand}</div>
       </div>
 
       <div className="wiz-review-section">
-        <div className="wiz-review-label">PRODUCT LINES</div>
+        <div className="wiz-review-label">
+          PRODUCT LINES
+          <button className="wiz-edit-link" onClick={() => onEditStep(2)} type="button">
+            Edit
+          </button>
+        </div>
         <div className="wiz-review-value">
           {state.products.length > 0 ? (
-            state.products.join(', ')
+            <>
+              <div>Tracking: {activeProducts.length > 0 ? activeProducts.join(', ') : 'None'}</div>
+              {skippedProducts.length > 0 && (
+                <div>Skipped: {skippedProducts.join(', ')}</div>
+              )}
+            </>
           ) : (
             <span className="wiz-review-empty">None added</span>
           )}
@@ -521,7 +555,12 @@ function StepReview({
       </div>
 
       <div className="wiz-review-section">
-        <div className="wiz-review-label">CLAIMS</div>
+        <div className="wiz-review-label">
+          CLAIMS
+          <button className="wiz-edit-link" onClick={() => onEditStep(3)} type="button">
+            Edit
+          </button>
+        </div>
         <div className="wiz-review-value">
           {hasAnyClaims ? (
             <>
@@ -539,11 +578,18 @@ function StepReview({
       </div>
 
       <div className="wiz-review-section">
-        <div className="wiz-review-label">COMPETITORS</div>
+        <div className="wiz-review-label">
+          COMPETITORS
+          <button className="wiz-edit-link" onClick={() => onEditStep(4)} type="button">
+            Edit
+          </button>
+        </div>
         <div className="wiz-review-value">
-          {Object.values(state.competitors).some((arr) => arr.length > 0) ? (
-            Object.entries(state.competitors).map(([key, arr]) => (
-              <div key={key}>{key === 'brand' ? 'Brand' : key}: {arr.length} competitor(s)</div>
+          {state.products.length > 0 ? (
+            state.products.map((product) => (
+              <div key={product}>
+                {product}: {(state.competitors[product] ?? []).length} competitor(s)
+              </div>
             ))
           ) : (
             <span className="wiz-review-empty">None added</span>
@@ -552,7 +598,12 @@ function StepReview({
       </div>
 
       <div className="wiz-review-section">
-        <div className="wiz-review-label">ANALYSIS MODEL</div>
+        <div className="wiz-review-label">
+          ANALYSIS MODEL
+          <button className="wiz-edit-link" onClick={() => onEditStep(5)} type="button">
+            Edit
+          </button>
+        </div>
         <div className="wiz-review-value">GPT-4o</div>
       </div>
 
@@ -643,6 +694,7 @@ export default function WizardPage() {
         claims: buildClaimsPayload(state),
         competitors: state.competitors,
         product_lines: state.products,
+        skipped_product_lines: state.skippedProductLines,
         llms: state.llms,
       }
       const res = await fetch('/api/config', {
@@ -719,6 +771,7 @@ export default function WizardPage() {
               {currentStep === 3 && (
                 <StepClaims
                   products={state.products}
+                  skippedProductLines={state.skippedProductLines}
                   claimsBrand={state.claims.brand}
                   claimsProducts={state.claims.products}
                   onChangeBrand={(tags) =>
@@ -743,6 +796,7 @@ export default function WizardPage() {
               {currentStep === 4 && (
                 <StepCompetitors
                   products={state.products}
+                  skippedProductLines={state.skippedProductLines}
                   competitors={state.competitors}
                   onChange={(product, tags) =>
                     setState((prev) => ({
@@ -766,6 +820,7 @@ export default function WizardPage() {
                   submitting={submitting}
                   onSubmit={handleSubmit}
                   onBack={() => setCurrentStep(5)}
+                  onEditStep={(step) => setCurrentStep(step)}
                 />
               )}
             </div>
