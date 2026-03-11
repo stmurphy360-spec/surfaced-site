@@ -66,14 +66,12 @@ export default async function ResultsPage({
           <a
             href={`/api/runs/${run_id}/download?file=visibility-csv`}
             className="results-csv-link"
-            download
           >
             Visibility CSV
           </a>
           <a
             href={`/api/runs/${run_id}/download?file=messaging-csv`}
             className="results-csv-link"
-            download
           >
             Messaging Alignment CSV
           </a>
