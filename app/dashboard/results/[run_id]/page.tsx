@@ -1,3 +1,5 @@
+import '../results.css'
+
 export const metadata = {
   robots: 'noindex',
 }
@@ -52,24 +54,34 @@ export default async function ResultsPage({
   const label = formatAnalysisLabel(run_id, sequenceNumber)
 
   return (
-    <div className="flex flex-col h-screen bg-cream">
-      {/* Top bar */}
-      <div className="flex items-center px-6 py-3 border-b border-subtle/20 bg-white shrink-0">
-        <div className="flex items-center gap-4">
-          <a
-            href="/dashboard"
-            className="font-body text-sm text-subtle hover:text-ink transition-colors"
-          >
+    <div className="results-root">
+      <div className="results-topbar">
+        <div className="results-topbar-left">
+          <a href="/dashboard" className="results-back">
             &larr; Dashboard
           </a>
-          <span className="font-body text-sm font-semibold text-ink">{label}</span>
+          <span className="results-label">{label}</span>
+        </div>
+        <div className="results-topbar-right">
+          <a
+            href={`/api/runs/${run_id}/download?file=visibility-csv`}
+            className="results-csv-link"
+            download
+          >
+            Visibility CSV
+          </a>
+          <a
+            href={`/api/runs/${run_id}/download?file=messaging-csv`}
+            className="results-csv-link"
+            download
+          >
+            Messaging Alignment CSV
+          </a>
         </div>
       </div>
-
-      {/* Full-width iframe for HTML report */}
       <iframe
         src={`/api/runs/${run_id}/download?file=report`}
-        className="flex-1 w-full border-none"
+        className="results-iframe"
         title={`Analysis results — ${label}`}
       />
     </div>
