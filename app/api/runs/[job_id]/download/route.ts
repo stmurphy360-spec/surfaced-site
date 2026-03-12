@@ -12,7 +12,9 @@ export async function GET(
   const file = searchParams.get('file')
 
   let upstreamPath: string
-  if (file === 'csv-bundle') {
+  if (file === 'full-data-csv') {
+    upstreamPath = `/files/${job_id}/full_data.csv`
+  } else if (file === 'csv-bundle') {
     upstreamPath = `/files/${job_id}/csv-bundle`
   } else if (file === 'visibility-csv') {
     upstreamPath = `/files/${job_id}/visibility.csv`
@@ -31,7 +33,7 @@ export async function GET(
       return NextResponse.json({ error: 'File not available' }, { status: res.status })
     }
     const buffer = await res.arrayBuffer()
-    const contentDisposition = (file === 'csv-bundle' || file === 'visibility-csv' || file === 'messaging-csv')
+    const contentDisposition = (file === 'full-data-csv' || file === 'csv-bundle' || file === 'visibility-csv' || file === 'messaging-csv')
       ? (res.headers.get('content-disposition') ?? 'attachment')
       : 'inline'
     return new Response(buffer, {

@@ -64,18 +64,11 @@ export default async function ResultsPage({
         </div>
         <div className="results-topbar-right">
           <a
-            href={`/api/runs/${run_id}/download?file=visibility-csv`}
+            href={`/api/runs/${run_id}/download?file=full-data-csv`}
             className="results-csv-link"
             download
           >
-            Visibility CSV
-          </a>
-          <a
-            href={`/api/runs/${run_id}/download?file=messaging-csv`}
-            className="results-csv-link"
-            download
-          >
-            Messaging Alignment CSV
+            Download Full Data
           </a>
         </div>
       </div>
