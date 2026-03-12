@@ -22,7 +22,7 @@ export function parseDashboardConfig(config: any): ProductLineCard[] {
 
     const claimsCount = key === 'brand'
       ? (claims.brand?.length ?? 0)
-      : (claims.products?.[key]?.length ?? 0)
+      : (claims[key]?.length ?? claims.products?.[key]?.length ?? 0)
 
     return {
       name: key,
