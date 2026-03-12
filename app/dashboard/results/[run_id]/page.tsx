@@ -67,6 +67,8 @@ export default async function ResultsPage({
             href={`/api/runs/${run_id}/download?file=full-data-csv`}
             className="results-csv-link"
             download
+            target="_blank"
+            rel="noopener"
           >
             Download Full Data
           </a>
