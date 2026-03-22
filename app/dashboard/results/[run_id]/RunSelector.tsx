@@ -52,6 +52,27 @@ export function RunSelector({ currentRunId }: { currentRunId: string }) {
   )
 }
 
+const PROVIDER_LABELS: Record<string, string> = {
+  openai: 'OpenAI',
+  anthropic: 'Anthropic',
+  google: 'Gemini',
+  perplexity: 'Perplexity',
+}
+
+export function ModelBadgeList({ models }: { models: Record<string, string> }) {
+  const entries = Object.entries(models)
+  if (!entries.length) return null
+  return (
+    <div className="model-badge-list">
+      {entries.map(([provider]) => (
+        <span key={provider} className={`model-badge model-badge--${provider}`}>
+          {PROVIDER_LABELS[provider] ?? provider}
+        </span>
+      ))}
+    </div>
+  )
+}
+
 export function ExportPdfButton({ runId }: { runId: string }) {
   return (
     <a

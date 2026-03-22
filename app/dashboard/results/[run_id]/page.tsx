@@ -1,5 +1,5 @@
 import '../results.css'
-import { RunSelector, ExportPdfButton } from './RunSelector'
+import { RunSelector, ExportPdfButton, ModelBadgeList } from './RunSelector'
 
 export const metadata = {
   robots: 'noindex',
@@ -22,6 +22,22 @@ function formatAnalysisLabel(runId: string, sequenceNumber?: number): string {
   return sequenceNumber != null
     ? `Analysis — ${formatted} (${sequenceNumber})`
     : `Analysis — ${formatted}`
+}
+
+async function fetchRunModels(runId: string): Promise<Record<string, string>> {
+  try {
+    const pythonApiUrl = process.env.PYTHON_API_URL ?? 'http://localhost:8000'
+    const pythonApiSecret = process.env.PYTHON_API_SECRET ?? ''
+    const res = await fetch(`${pythonApiUrl}/runs/${runId}/meta`, {
+      headers: { Authorization: `Bearer ${pythonApiSecret}` },
+      cache: 'no-store',
+    })
+    if (!res.ok) return {}
+    const data = await res.json()
+    return (data.models as Record<string, string>) ?? {}
+  } catch {
+    return {}
+  }
 }
 
 async function fetchDaySequenceNumber(runId: string): Promise<number | undefined> {
@@ -51,7 +67,10 @@ export default async function ResultsPage({
   params: Promise<{ run_id: string }>
 }) {
   const { run_id } = await params
-  const sequenceNumber = await fetchDaySequenceNumber(run_id)
+  const [sequenceNumber, models] = await Promise.all([
+    fetchDaySequenceNumber(run_id),
+    fetchRunModels(run_id),
+  ])
   const label = formatAnalysisLabel(run_id, sequenceNumber)
 
   return (
@@ -65,6 +84,7 @@ export default async function ResultsPage({
           <span className="results-label">{label}</span>
         </div>
         <div className="results-topbar-right">
+          <ModelBadgeList models={models} />
           <ExportPdfButton runId={run_id} />
           <a
             href={`/api/runs/${run_id}/download?file=full-data-csv`}

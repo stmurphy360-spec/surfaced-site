@@ -63,6 +63,28 @@
   color: #ffffff;
 }
 
+.model-badge-list {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.model-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: #f0f4ff;
+  color: #4f67c7;
+}
+
+.model-badge--openai    { background: #e6f6f0; color: #0d7c59; }
+.model-badge--anthropic { background: #fff4e6; color: #d97706; }
+.model-badge--google    { background: #e8f0fe; color: #1a73e8; }
+.model-badge--perplexity { background: #f0f0ff; color: #6366f1; }
+
 .run-selector {
   font-size: 13px;
   font-weight: 500;
