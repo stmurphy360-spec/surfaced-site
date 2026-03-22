@@ -20,6 +20,8 @@ export async function GET(
     upstreamPath = `/files/${job_id}/visibility.csv`
   } else if (file === 'messaging-csv') {
     upstreamPath = `/files/${job_id}/ideal_content.csv`
+  } else if (file === 'print') {
+    upstreamPath = `/files/${job_id}/print`
   } else {
     upstreamPath = `/files/${job_id}/report.html`
   }

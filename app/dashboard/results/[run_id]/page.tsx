@@ -1,4 +1,5 @@
 import '../results.css'
+import { RunSelector, ExportPdfButton } from './RunSelector'
 
 export const metadata = {
   robots: 'noindex',
@@ -60,9 +61,11 @@ export default async function ResultsPage({
           <a href="/dashboard" className="results-back">
             &larr; Dashboard
           </a>
+          <RunSelector currentRunId={run_id} />
           <span className="results-label">{label}</span>
         </div>
         <div className="results-topbar-right">
+          <ExportPdfButton runId={run_id} />
           <a
             href={`/api/runs/${run_id}/download?file=full-data-csv`}
             className="results-csv-link"
