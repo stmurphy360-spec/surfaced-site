@@ -1,0 +1,47 @@
+/* app/dashboard/dashboard-layout.css */
+/* Layout shell and nav for dashboard area — imported in layout.tsx */
+
+.dashboard-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.dashboard-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1.5rem 1rem;
+  width: 200px;
+  border-right: 1px solid #e5e7eb;
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+.dashboard-nav-link {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  color: #374151;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.dashboard-nav-link:hover {
+  background: #f3f4f6;
+}
+
+.dashboard-content {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .dashboard-shell { flex-direction: column; }
+  .dashboard-nav {
+    flex-direction: row;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+}
