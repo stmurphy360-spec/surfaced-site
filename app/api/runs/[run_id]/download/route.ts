@@ -5,25 +5,25 @@ const PYTHON_API_SECRET = process.env.PYTHON_API_SECRET ?? ''
 
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ job_id: string }> }
+  { params }: { params: Promise<{ run_id: string }> }
 ) {
-  const { job_id } = await params
+  const { run_id } = await params
   const { searchParams } = new URL(req.url)
   const file = searchParams.get('file')
 
   let upstreamPath: string
   if (file === 'full-data-csv') {
-    upstreamPath = `/files/${job_id}/full_data.csv`
+    upstreamPath = `/files/${run_id}/full_data.csv`
   } else if (file === 'csv-bundle') {
-    upstreamPath = `/files/${job_id}/csv-bundle`
+    upstreamPath = `/files/${run_id}/csv-bundle`
   } else if (file === 'visibility-csv') {
-    upstreamPath = `/files/${job_id}/visibility.csv`
+    upstreamPath = `/files/${run_id}/visibility.csv`
   } else if (file === 'messaging-csv') {
-    upstreamPath = `/files/${job_id}/ideal_content.csv`
+    upstreamPath = `/files/${run_id}/ideal_content.csv`
   } else if (file === 'print') {
-    upstreamPath = `/files/${job_id}/print`
+    upstreamPath = `/files/${run_id}/print`
   } else {
-    upstreamPath = `/files/${job_id}/report.html`
+    upstreamPath = `/files/${run_id}/report.html`
   }
 
   try {

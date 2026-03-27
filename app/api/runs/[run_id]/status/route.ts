@@ -5,11 +5,11 @@ const PYTHON_API_SECRET = process.env.PYTHON_API_SECRET ?? ''
 
 export async function GET(
   _req: Request,
-  { params }: { params: Promise<{ job_id: string }> }
+  { params }: { params: Promise<{ run_id: string }> }
 ) {
-  const { job_id } = await params
+  const { run_id } = await params
   try {
-    const res = await fetch(`${PYTHON_API}/status/${job_id}`, {
+    const res = await fetch(`${PYTHON_API}/status/${run_id}`, {
       headers: { Authorization: `Bearer ${PYTHON_API_SECRET}` },
       cache: 'no-store',
     })
