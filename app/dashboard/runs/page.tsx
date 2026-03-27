@@ -21,7 +21,8 @@ async function fetchRuns(): Promise<RunRecord[]> {
       cache: 'no-store',
     })
     if (!res.ok) return []
-    return await res.json()
+    const data = await res.json()
+    return Array.isArray(data) ? data : []
   } catch {
     return []
   }
