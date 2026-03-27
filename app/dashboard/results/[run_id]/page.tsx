@@ -47,14 +47,17 @@ async function fetchDaySequenceNumber(runId: string): Promise<number | undefined
     const date = match[1]
     const pythonApiUrl = process.env.PYTHON_API_URL ?? 'http://localhost:8000'
     const pythonApiSecret = process.env.PYTHON_API_SECRET ?? ''
-    const res = await fetch(`${pythonApiUrl}/runs?date=${date}`, {
+    const res = await fetch(`${pythonApiUrl}/runs`, {
       headers: { Authorization: `Bearer ${pythonApiSecret}` },
       cache: 'no-store',
     })
     if (!res.ok) return undefined
-    const data = await res.json()
-    const sorted: string[] = data.run_ids ?? []
-    const idx = sorted.indexOf(runId)
+    const data: Array<{ run_id: string }> = await res.json()
+    const dayRuns = data
+      .map((r) => r.run_id)
+      .filter((id) => id.startsWith(`run_${date}`))
+      .sort()
+    const idx = dayRuns.indexOf(runId)
     return idx === -1 ? undefined : idx + 1
   } catch {
     return undefined // graceful: show label without count

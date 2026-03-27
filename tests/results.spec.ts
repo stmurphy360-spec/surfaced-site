@@ -9,7 +9,16 @@ test.describe('RPTD-03: Results page top bar chrome', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ run_ids: ['run_20260310_120000'] }),
+        body: JSON.stringify([{
+          run_id: 'run_20260310_120000',
+          run_date: '20260310',
+          status: 'complete',
+          started_at: '2026-03-10T12:00:00+00:00',
+          completed_at: '2026-03-10T12:05:00+00:00',
+          total_prompts: 5,
+          total_responses: 10,
+          brand_name: 'JG Wentworth',
+        }]),
       })
     })
     await page.goto('/dashboard/results/run_20260310_120000')

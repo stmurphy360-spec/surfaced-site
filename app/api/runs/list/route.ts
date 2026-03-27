@@ -3,14 +3,9 @@ import { NextResponse } from 'next/server'
 const PYTHON_API = process.env.PYTHON_API_URL ?? 'http://localhost:8000'
 const PYTHON_API_SECRET = process.env.PYTHON_API_SECRET ?? ''
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url)
-    const date = searchParams.get('date') ?? ''
-    const url = date
-      ? `${PYTHON_API}/runs?date=${encodeURIComponent(date)}`
-      : `${PYTHON_API}/runs`
-    const res = await fetch(url, {
+    const res = await fetch(`${PYTHON_API}/runs`, {
       headers: { Authorization: `Bearer ${PYTHON_API_SECRET}` },
       cache: 'no-store',
     })
