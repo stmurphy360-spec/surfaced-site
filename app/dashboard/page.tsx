@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { parseDashboardConfig, type ProductLineCard } from '@/lib/dashboard-config'
 import './dashboard.css'
 
 type RunState =
@@ -12,36 +11,41 @@ type RunState =
   | { phase: 'error'; message: string }
 
 const POLL_INTERVAL_MS = 3000
+const LS_BRAND_KEY = 'surfaced_brand_name'
+const LS_COMPETITORS_KEY = 'surfaced_competitors'
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [ready, setReady] = useState(false)
-  const [cards, setCards] = useState<ProductLineCard[]>([])
-  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const promptRef = useRef<HTMLTextAreaElement>(null)
+
+  const [brandName, setBrandName] = useState('')
+  const [prompts, setPrompts] = useState<string[]>([])
+  const [promptDraft, setPromptDraft] = useState('')
+  const [competitorDraft, setCompetitorDraft] = useState('')
+  const [competitors, setCompetitors] = useState<string[]>([])
   const [runState, setRunState] = useState<RunState>({ phase: 'idle' })
 
-  // Mount: load config, derive cards, initialize selection
+  // Restore brand name and competitors from localStorage
   useEffect(() => {
-    fetch('/api/config', { cache: 'no-store' })
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data?.brand_name) {
-          router.replace('/wizard')
-        } else {
-          const derived = parseDashboardConfig(data)
-          setCards(derived)
-          // Initialize selection: all non-skipped product lines
-          setSelected(new Set(derived.filter((c) => !c.isSkipped).map((c) => c.name)))
-          setReady(true)
-        }
-      })
-      .catch(() => {
-        // Fail open — don't redirect on network error
-        setReady(true)
-      })
-  }, [router])
+    const saved = localStorage.getItem(LS_BRAND_KEY)
+    if (saved) setBrandName(saved)
+    const savedComp = localStorage.getItem(LS_COMPETITORS_KEY)
+    if (savedComp) {
+      try { setCompetitors(JSON.parse(savedComp)) } catch { /* ignore */ }
+    }
+  }, [])
 
-  // Mount: check for active run and resume polling
+  // Persist brand name to localStorage
+  useEffect(() => {
+    if (brandName) localStorage.setItem(LS_BRAND_KEY, brandName)
+  }, [brandName])
+
+  // Persist competitors to localStorage
+  useEffect(() => {
+    localStorage.setItem(LS_COMPETITORS_KEY, JSON.stringify(competitors))
+  }, [competitors])
+
+  // Check for active run on mount
   useEffect(() => {
     fetch('/api/runs/active', { cache: 'no-store' })
       .then((res) => (res.ok ? res.json() : null))
@@ -50,10 +54,10 @@ export default function DashboardPage() {
           setRunState({ phase: 'running', jobId: data.job_id })
         }
       })
-      .catch(() => {}) // silent fail
+      .catch(() => {})
   }, [])
 
-  // Polling: poll status while running
+  // Poll status while running
   useEffect(() => {
     if (runState.phase !== 'running') return
     const jobId = runState.jobId
@@ -85,7 +89,7 @@ export default function DashboardPage() {
     }
   }, [runState, router])
 
-  // Auto-reset to idle after error (8s)
+  // Auto-reset error after 8s
   useEffect(() => {
     if (runState.phase === 'error') {
       const t = setTimeout(() => setRunState({ phase: 'idle' }), 8000)
@@ -93,21 +97,42 @@ export default function DashboardPage() {
     }
   }, [runState.phase])
 
-  function toggleCard(key: string) {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) {
-        next.delete(key)
-      } else {
-        next.add(key)
-      }
-      return next
-    })
+  function addPrompt() {
+    const text = promptDraft.trim()
+    if (!text) return
+    setPrompts((prev) => [...prev, text])
+    setPromptDraft('')
+    promptRef.current?.focus()
   }
 
-  async function handleRunClick() {
+  function removePrompt(index: number) {
+    setPrompts((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  function addCompetitor() {
+    const name = competitorDraft.trim()
+    if (!name || competitors.includes(name)) return
+    setCompetitors((prev) => [...prev, name])
+    setCompetitorDraft('')
+  }
+
+  function removeCompetitor(index: number) {
+    setCompetitors((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  async function handleRun() {
+    if (!brandName.trim() || prompts.length === 0) return
     try {
-      const res = await fetch('/api/runs', { method: 'POST', cache: 'no-store' })
+      const res = await fetch('/api/runs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brand_name: brandName.trim(),
+          prompts,
+          competitors: competitors.length > 0 ? competitors : null,
+        }),
+        cache: 'no-store',
+      })
       const data = await res.json()
       if (!res.ok) {
         setRunState({ phase: 'error', message: data.error ?? 'Failed to start analysis' })
@@ -119,82 +144,143 @@ export default function DashboardPage() {
     }
   }
 
-  if (!ready) return null
-
-  const activeCount = cards.filter((c) => !c.isSkipped).length
   const isRunning = runState.phase === 'running'
-  const isRunDisabled = selected.size === 0 || isRunning || runState.phase === 'done'
-
-  const runBtnLabel = isRunning
-    ? 'Running...'
-    : `Run ${selected.size} of ${activeCount}`
+  const canRun = brandName.trim().length > 0 && prompts.length > 0 && !isRunning && runState.phase !== 'done'
 
   return (
     <div className="dashboard-root">
       <div className="dash-topbar">
-        <span className="dash-topbar-title">Launch Pad</span>
+        <span className="dash-topbar-title">New Run</span>
         <button
-          className="lp-run-btn"
-          disabled={isRunDisabled}
-          onClick={handleRunClick}
+          className="pe-run-btn"
+          disabled={!canRun}
+          onClick={handleRun}
         >
-          {isRunning && <span className="lp-spinner" style={{ marginRight: 8 }} />}
-          {runBtnLabel}
+          {isRunning && <span className="pe-spinner" />}
+          {isRunning ? 'Running...' : `Run Analysis${prompts.length > 0 ? ` (${prompts.length} prompt${prompts.length === 1 ? '' : 's'})` : ''}`}
         </button>
       </div>
 
       <div className="dash-body">
         <div className="dash-content">
 
-          {cards.length > 0 && cards.map((card) => (
-            <div
-              key={card.name}
-              className={`lp-card${card.isSkipped ? ' lp-card-skipped' : ''}`}
-            >
-              {/* Card header row */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                <input
-                  type="checkbox"
-                  className="lp-checkbox"
-                  checked={selected.has(card.name)}
-                  disabled={card.isSkipped || isRunning}
-                  onChange={() => toggleCard(card.name)}
-                />
-                <span className="lp-section-label" style={{ margin: 0 }}>{card.displayName}</span>
-                <span className={card.isSkipped ? 'lp-badge-skipped' : 'lp-badge-active'}>
-                  {card.isSkipped ? 'Skipped' : 'Active'}
-                </span>
-                {isRunning && selected.has(card.name) && (
-                  <>
-                    <span className="lp-spinner" />
-                    <span style={{ fontSize: 12, color: '#4b5568' }}>Running</span>
-                  </>
-                )}
-              </div>
-
-              {/* Competitor pills */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
-                {card.competitors.length > 0
-                  ? card.competitors.map((c) => (
-                      <span key={c} className="lp-tag">{c}</span>
-                    ))
-                  : <span style={{ fontSize: 13, color: '#4b5568' }}>No competitors</span>
-                }
-              </div>
-
-              {/* Claims count */}
-              <p style={{ fontSize: 13, color: '#4b5568', margin: 0 }}>
-                {card.claimsCount} {card.claimsCount === 1 ? 'claim' : 'claims'}
-              </p>
+          {/* Running state */}
+          {isRunning && (
+            <div className="pe-running-banner">
+              <span className="pe-spinner" />
+              <span>Analysis in progress...</span>
             </div>
-          ))}
-
-          {/* Error message */}
-          {runState.phase === 'error' && (
-            <p style={{ fontSize: 14, color: '#dc2626', marginTop: 12 }}>
-              Analysis failed: {runState.message}
-            </p>
           )}
+
+          {/* Error state */}
+          {runState.phase === 'error' && (
+            <div className="pe-error-banner">
+              Analysis failed: {runState.message}
+            </div>
+          )}
+
+          {/* Brand Name */}
+          <section className="pe-section">
+            <label className="pe-label" htmlFor="brand-name">Brand Name</label>
+            <input
+              id="brand-name"
+              type="text"
+              className="pe-input"
+              placeholder="e.g. JG Wentworth"
+              value={brandName}
+              onChange={(e) => setBrandName(e.target.value)}
+              disabled={isRunning}
+            />
+          </section>
+
+          {/* Prompts */}
+          <section className="pe-section">
+            <label className="pe-label">Prompts</label>
+            <p className="pe-hint">Write questions an LLM user might ask. Each prompt is sent to the model separately.</p>
+            <div className="pe-prompt-input-row">
+              <textarea
+                ref={promptRef}
+                className="pe-textarea"
+                placeholder="e.g. What are the best options for selling a structured settlement?"
+                value={promptDraft}
+                onChange={(e) => setPromptDraft(e.target.value)}
+                disabled={isRunning}
+                rows={2}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    addPrompt()
+                  }
+                }}
+              />
+              <button
+                className="pe-add-btn"
+                onClick={addPrompt}
+                disabled={!promptDraft.trim() || isRunning}
+              >
+                Add
+              </button>
+            </div>
+
+            {prompts.length > 0 && (
+              <ul className="pe-prompt-list">
+                {prompts.map((p, i) => (
+                  <li key={i} className="pe-prompt-item">
+                    <span className="pe-prompt-num">{i + 1}</span>
+                    <span className="pe-prompt-text">{p}</span>
+                    {!isRunning && (
+                      <button className="pe-remove-btn" onClick={() => removePrompt(i)} aria-label="Remove prompt">
+                        &times;
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          {/* Competitors */}
+          <section className="pe-section">
+            <label className="pe-label">Competitors <span className="pe-optional">(optional)</span></label>
+            <div className="pe-competitor-input-row">
+              <input
+                type="text"
+                className="pe-input"
+                placeholder="e.g. Peachtree Financial"
+                value={competitorDraft}
+                onChange={(e) => setCompetitorDraft(e.target.value)}
+                disabled={isRunning}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addCompetitor()
+                  }
+                }}
+              />
+              <button
+                className="pe-add-btn"
+                onClick={addCompetitor}
+                disabled={!competitorDraft.trim() || isRunning}
+              >
+                Add
+              </button>
+            </div>
+
+            {competitors.length > 0 && (
+              <div className="pe-tag-list">
+                {competitors.map((c, i) => (
+                  <span key={i} className="pe-tag">
+                    {c}
+                    {!isRunning && (
+                      <button className="pe-tag-remove" onClick={() => removeCompetitor(i)} aria-label="Remove competitor">
+                        &times;
+                      </button>
+                    )}
+                  </span>
+                ))}
+              </div>
+            )}
+          </section>
 
         </div>
       </div>

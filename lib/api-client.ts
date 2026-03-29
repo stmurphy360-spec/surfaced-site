@@ -34,12 +34,10 @@ type ResponseOf<Op, Code extends number = 200> =
 // ---------------------------------------------------------------------------
 
 export type HealthResponse = components['schemas']['HealthResponse']
-export type ConfigResponse = components['schemas']['ConfigResponse']
-export type StatusResponse = components['schemas']['StatusResponse']
 export type RunTriggerResponse = components['schemas']['RunTriggerResponse']
 export type RunRecord = components['schemas']['RunRecord']
 export type RegenerateResponse = components['schemas']['RegenerateResponse']
-export type ConfigPayload = components['schemas']['ConfigPayload']
+export type RunRequest = components['schemas']['RunRequest']
 
 /** GET /runs — array of RunRecord */
 export type RunListResponse = ResponseOf<operations['list_runs_runs_get']>
@@ -96,19 +94,12 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
     }),
 
-  /** GET /config */
-  getConfig: () => apiFetch<ConfigResponse>('/config'),
-
-  /** POST /config */
-  postConfig: (body: ConfigPayload) =>
-    apiFetch<StatusResponse>('/config', {
+  /** POST /run — returns 202 */
+  triggerRun: (body: RunRequest) =>
+    apiFetch<RunTriggerResponse>('/run', {
       method: 'POST',
       body: JSON.stringify(body),
     }),
-
-  /** POST /run — returns 202 */
-  triggerRun: () =>
-    apiFetch<RunTriggerResponse>('/run', { method: 'POST' }),
 
   /** GET /runs */
   listRuns: () => apiFetch<RunListResponse>('/runs'),

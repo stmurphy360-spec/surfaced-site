@@ -327,72 +327,6 @@
         }
       }
     },
-    "/config": {
-      "get": {
-        "summary": "Get Config",
-        "description": "Return current brand_name, competitors, and claims \u2014 CONF-01/CONF-02/MSGN-01.\n\nFalls back to YAML defaults when web_config.json is absent.\nClaims falls back to empty dict when absent.\nKeys are display names (e.g. \"Structured Settlements\") \u2014 canonical format in web_config.json.",
-        "operationId": "get_config_config_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConfigResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      },
-      "post": {
-        "summary": "Post Config",
-        "description": "Persist brand_name, competitors, and/or claims to web_config.json \u2014 CONF-01/CONF-02/MSGN-05.\n\nMerges non-None fields into the current web config rather than overwriting.\nReturns {\"status\": \"saved\"} on success.",
-        "operationId": "post_config_config_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ConfigPayload"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StatusResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
     "/run": {
       "post": {
         "summary": "Trigger Run",
@@ -576,106 +510,6 @@
   },
   "components": {
     "schemas": {
-      "ConfigPayload": {
-        "properties": {
-          "brand_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Brand Name"
-          },
-          "competitors": {
-            "anyOf": [
-              {
-                "additionalProperties": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Competitors"
-          },
-          "claims": {
-            "anyOf": [
-              {
-                "additionalProperties": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Claims"
-          },
-          "skipped_product_lines": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Skipped Product Lines"
-          }
-        },
-        "type": "object",
-        "title": "ConfigPayload"
-      },
-      "ConfigResponse": {
-        "properties": {
-          "brand_name": {
-            "type": "string",
-            "title": "Brand Name"
-          },
-          "competitors": {
-            "additionalProperties": {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            },
-            "type": "object",
-            "title": "Competitors"
-          },
-          "claims": {
-            "additionalProperties": {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            },
-            "type": "object",
-            "title": "Claims"
-          }
-        },
-        "type": "object",
-        "required": [
-          "brand_name",
-          "competitors",
-          "claims"
-        ],
-        "title": "ConfigResponse"
-      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -851,19 +685,6 @@
           "status"
         ],
         "title": "RunTriggerResponse"
-      },
-      "StatusResponse": {
-        "properties": {
-          "status": {
-            "type": "string",
-            "title": "Status"
-          }
-        },
-        "type": "object",
-        "required": [
-          "status"
-        ],
-        "title": "StatusResponse"
       },
       "ValidationError": {
         "properties": {

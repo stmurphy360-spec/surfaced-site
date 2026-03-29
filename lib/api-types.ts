@@ -168,37 +168,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/config": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Config
-         * @description Return current brand_name, competitors, and claims — CONF-01/CONF-02/MSGN-01.
-         *
-         *     Falls back to YAML defaults when web_config.json is absent.
-         *     Claims falls back to empty dict when absent.
-         *     Keys are display names (e.g. "Structured Settlements") — canonical format in web_config.json.
-         */
-        get: operations["get_config_config_get"];
-        put?: never;
-        /**
-         * Post Config
-         * @description Persist brand_name, competitors, and/or claims to web_config.json — CONF-01/CONF-02/MSGN-05.
-         *
-         *     Merges non-None fields into the current web config rather than overwriting.
-         *     Returns {"status": "saved"} on success.
-         */
-        post: operations["post_config_config_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/run": {
         parameters: {
             query?: never;
@@ -309,34 +278,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** ConfigPayload */
-        ConfigPayload: {
-            /** Brand Name */
-            brand_name?: string | null;
-            /** Competitors */
-            competitors?: {
-                [key: string]: string[];
-            } | null;
-            /** Claims */
-            claims?: {
-                [key: string]: string[];
-            } | null;
-            /** Skipped Product Lines */
-            skipped_product_lines?: string[] | null;
-        };
-        /** ConfigResponse */
-        ConfigResponse: {
-            /** Brand Name */
-            brand_name: string;
-            /** Competitors */
-            competitors: {
-                [key: string]: string[];
-            };
-            /** Claims */
-            claims: {
-                [key: string]: string[];
-            };
-        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -390,11 +331,6 @@ export interface components {
             job_id: string;
             /** Run Id */
             run_id: string;
-            /** Status */
-            status: string;
-        };
-        /** StatusResponse */
-        StatusResponse: {
             /** Status */
             status: string;
         };
@@ -644,59 +580,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RegenerateResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_config_config_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ConfigResponse"];
-                };
-            };
-        };
-    };
-    post_config_config_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ConfigPayload"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatusResponse"];
                 };
             };
             /** @description Validation Error */
