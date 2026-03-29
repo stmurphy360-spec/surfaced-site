@@ -364,20 +364,16 @@ export interface components {
         RunRecord: {
             /** Run Id */
             run_id: string;
-            /** Run Date */
-            run_date?: string | null;
+            /** Brand Name */
+            brand_name: string;
+            /** Competitors */
+            competitors?: string[] | null;
             /** Status */
-            status?: string | null;
+            status: string;
             /** Started At */
             started_at?: string | null;
             /** Completed At */
             completed_at?: string | null;
-            /** Total Prompts */
-            total_prompts?: number | null;
-            /** Total Responses */
-            total_responses?: number | null;
-            /** Brand Name */
-            brand_name?: string | null;
         };
         /** RunTriggerResponse */
         RunTriggerResponse: {
