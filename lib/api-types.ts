@@ -324,10 +324,74 @@ export interface components {
             /** Skipped Product Lines */
             skipped_product_lines?: string[] | null;
         };
+        /** ConfigResponse */
+        ConfigResponse: {
+            /** Brand Name */
+            brand_name: string;
+            /** Competitors */
+            competitors: {
+                [key: string]: string[];
+            };
+            /** Claims */
+            claims: {
+                [key: string]: string[];
+            };
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HealthResponse */
+        HealthResponse: {
+            /** Status */
+            status: string;
+            /** Db */
+            db: string;
+            /** Service */
+            service: string;
+            /** Timestamp */
+            timestamp: string;
+        };
+        /** RegenerateResponse */
+        RegenerateResponse: {
+            /** Status */
+            status: string;
+            /** Run Id */
+            run_id: string;
+        };
+        /** RunRecord */
+        RunRecord: {
+            /** Run Id */
+            run_id: string;
+            /** Run Date */
+            run_date?: string | null;
+            /** Status */
+            status?: string | null;
+            /** Started At */
+            started_at?: string | null;
+            /** Completed At */
+            completed_at?: string | null;
+            /** Total Prompts */
+            total_prompts?: number | null;
+            /** Total Responses */
+            total_responses?: number | null;
+            /** Brand Name */
+            brand_name?: string | null;
+        };
+        /** RunTriggerResponse */
+        RunTriggerResponse: {
+            /** Job Id */
+            job_id: string;
+            /** Run Id */
+            run_id: string;
+            /** Status */
+            status: string;
+        };
+        /** StatusResponse */
+        StatusResponse: {
+            /** Status */
+            status: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -366,7 +430,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["HealthResponse"];
                 };
             };
         };
@@ -574,7 +638,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["RegenerateResponse"];
                 };
             };
             /** @description Validation Error */
@@ -603,7 +667,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ConfigResponse"];
                 };
             };
         };
@@ -627,7 +691,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["StatusResponse"];
                 };
             };
             /** @description Validation Error */
@@ -651,12 +715,12 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Successful Response */
-            200: {
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["RunTriggerResponse"];
                 };
             };
         };
@@ -696,7 +760,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["RunRecord"][];
                 };
             };
         };
