@@ -210,10 +210,10 @@ export interface paths {
         put?: never;
         /**
          * Trigger Run
-         * @description Trigger a new CLI run asynchronously — RUN-02.
+         * @description Trigger a new run with user-provided prompts.
          *
+         *     Accepts { brand_name, prompts, competitors } and runs asynchronously.
          *     Returns 202 immediately with job_id and status="running".
-         *     The CLI subprocess runs in the background via Starlette's threadpool.
          */
         post: operations["trigger_run_run_post"];
         delete?: never;
@@ -374,6 +374,15 @@ export interface components {
             started_at?: string | null;
             /** Completed At */
             completed_at?: string | null;
+        };
+        /** RunRequest */
+        RunRequest: {
+            /** Brand Name */
+            brand_name: string;
+            /** Prompts */
+            prompts: string[];
+            /** Competitors */
+            competitors?: string[] | null;
         };
         /** RunTriggerResponse */
         RunTriggerResponse: {
@@ -708,7 +717,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RunRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             202: {
@@ -717,6 +730,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RunTriggerResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

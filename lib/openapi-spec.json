@@ -396,8 +396,18 @@
     "/run": {
       "post": {
         "summary": "Trigger Run",
-        "description": "Trigger a new CLI run asynchronously \u2014 RUN-02.\n\nReturns 202 immediately with job_id and status=\"running\".\nThe CLI subprocess runs in the background via Starlette's threadpool.",
+        "description": "Trigger a new run with user-provided prompts.\n\nAccepts { brand_name, prompts, competitors } and runs asynchronously.\nReturns 202 immediately with job_id and status=\"running\".",
         "operationId": "trigger_run_run_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunRequest"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "202": {
             "description": "Successful Response",
@@ -405,6 +415,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RunTriggerResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -773,6 +793,41 @@
           "status"
         ],
         "title": "RunRecord"
+      },
+      "RunRequest": {
+        "properties": {
+          "brand_name": {
+            "type": "string",
+            "title": "Brand Name"
+          },
+          "prompts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Prompts"
+          },
+          "competitors": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Competitors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "brand_name",
+          "prompts"
+        ],
+        "title": "RunRequest"
       },
       "RunTriggerResponse": {
         "properties": {
