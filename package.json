@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "generate-api-types": "bash scripts/generate-api-types.sh"
+    "generate-api-types": "bash scripts/generate-api-types.sh",
+    "check-api-spec": "bash scripts/check-api-spec.sh"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",
