@@ -1,3 +1,5 @@
+import type { ConfigResponse } from './api-client'
+
 export interface ProductLineCard {
   name: string          // raw key from config (e.g. "structured_settlements")
   displayName: string   // humanized (e.g. "Structured Settlements")
@@ -10,9 +12,9 @@ function humanizeKey(key: string): string {
   return key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
 }
 
-export function parseDashboardConfig(config: any): ProductLineCard[] {
-  const competitors: Record<string, string[]> = config.competitors ?? {}
-  const skipped: string[] = config.skipped_product_lines ?? []
+export function parseDashboardConfig(config: ConfigResponse): ProductLineCard[] {
+  const competitors = config.competitors ?? {}
+  const skipped: string[] = (config as any).skipped_product_lines ?? []
   const claims = config.claims ?? {}
 
   return Object.keys(competitors).map((key) => {
@@ -22,7 +24,7 @@ export function parseDashboardConfig(config: any): ProductLineCard[] {
 
     const claimsCount = key === 'brand'
       ? (claims.brand?.length ?? 0)
-      : (claims[key]?.length ?? claims.products?.[key]?.length ?? 0)
+      : (claims[key]?.length ?? (claims as any).products?.[key]?.length ?? 0)
 
     return {
       name: key,
