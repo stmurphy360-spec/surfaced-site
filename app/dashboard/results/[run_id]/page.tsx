@@ -24,7 +24,7 @@ function formatAnalysisLabel(runId: string, sequenceNumber?: number): string {
     : `Analysis — ${formatted}`
 }
 
-async function fetchRunModels(runId: string): Promise<Record<string, string>> {
+async function fetchRunMeta(runId: string): Promise<{ models: Record<string, string>; status?: string }> {
   try {
     const pythonApiUrl = process.env.PYTHON_API_URL ?? 'http://localhost:8000'
     const pythonApiSecret = process.env.PYTHON_API_SECRET ?? ''
@@ -32,11 +32,14 @@ async function fetchRunModels(runId: string): Promise<Record<string, string>> {
       headers: { Authorization: `Bearer ${pythonApiSecret}` },
       cache: 'no-store',
     })
-    if (!res.ok) return {}
+    if (!res.ok) return { models: {} }
     const data = await res.json()
-    return (data.models as Record<string, string>) ?? {}
+    return {
+      models: (data.models as Record<string, string>) ?? {},
+      status: data.status as string | undefined,
+    }
   } catch {
-    return {}
+    return { models: {} }
   }
 }
 
@@ -70,11 +73,13 @@ export default async function ResultsPage({
   params: Promise<{ run_id: string }>
 }) {
   const { run_id } = await params
-  const [sequenceNumber, models] = await Promise.all([
+  const [sequenceNumber, runMeta] = await Promise.all([
     fetchDaySequenceNumber(run_id),
-    fetchRunModels(run_id),
+    fetchRunMeta(run_id),
   ])
+  const { models, status } = runMeta
   const label = formatAnalysisLabel(run_id, sequenceNumber)
+  const reportAvailable = status === 'complete'
 
   return (
     <div className="results-root">
@@ -88,23 +93,37 @@ export default async function ResultsPage({
         </div>
         <div className="results-topbar-right">
           <ModelBadgeList models={models} />
-          <ExportPdfButton runId={run_id} />
-          <a
-            href={`/api/runs/${run_id}/download?file=full-data-csv`}
-            className="results-csv-link"
-            download
-            target="_blank"
-            rel="noopener"
-          >
-            Download Full Data
-          </a>
+          {reportAvailable && (
+            <>
+              <ExportPdfButton runId={run_id} />
+              <a
+                href={`/api/runs/${run_id}/download?file=full-data-csv`}
+                className="results-csv-link"
+                download
+                target="_blank"
+                rel="noopener"
+              >
+                Download Full Data
+              </a>
+            </>
+          )}
         </div>
       </div>
-      <iframe
-        src={`/api/runs/${run_id}/download?file=report`}
-        className="results-iframe"
-        title={`Analysis results — ${label}`}
-      />
+      {reportAvailable ? (
+        <iframe
+          src={`/api/runs/${run_id}/download?file=report`}
+          className="results-iframe"
+          title={`Analysis results — ${label}`}
+        />
+      ) : (
+        <div className="results-error">
+          <p>Report not available for this run.</p>
+          <p className="results-error-detail">
+            {status === 'failed' ? 'This analysis run failed.' : status === 'running' ? 'This analysis is still running.' : 'Report data could not be found.'}
+          </p>
+          <a href="/dashboard" className="results-error-link">Back to Dashboard</a>
+        </div>
+      )}
     </div>
   )
 }

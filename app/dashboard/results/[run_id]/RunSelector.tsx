@@ -27,7 +27,11 @@ export function RunSelector({ currentRunId }: { currentRunId: string }) {
     fetch('/api/runs/list', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
-        const ids: string[] = Array.isArray(data) ? data.map((r: { run_id: string }) => r.run_id) : []
+        const ids: string[] = Array.isArray(data)
+          ? data
+              .filter((r: { status: string }) => r.status === 'complete')
+              .map((r: { run_id: string }) => r.run_id)
+          : []
         setRunIds(ids)
       })
       .catch(() => {})

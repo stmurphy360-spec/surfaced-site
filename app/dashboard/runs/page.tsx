@@ -66,12 +66,18 @@ export default async function RunHistoryPage() {
               <div className="run-row-date">{formatDate(run.started_at)}</div>
               <StatusBadge status={run.status} />
               <span className="run-row-prompts">{run.total_prompts} prompts</span>
-              <span className="run-row-brand">{run.brand_name ?? 'JG Wentworth'}</span>
+              <span className="run-row-brand">{run.brand_name ?? 'Unknown Brand'}</span>
             </div>
             <div className="run-row-actions">
-              <Link href={`/dashboard/results/${run.run_id}`} className="run-row-link run-row-link--primary">
-                View Report
-              </Link>
+              {run.status === 'complete' ? (
+                <Link href={`/dashboard/results/${run.run_id}`} className="run-row-link run-row-link--primary">
+                  View Report
+                </Link>
+              ) : (
+                <span className="run-row-link run-row-link--disabled">
+                  {run.status === 'running' ? 'In Progress' : 'Failed'}
+                </span>
+              )}
               <Link href="/dashboard" className="run-row-link run-row-link--secondary">
                 Run Again
               </Link>

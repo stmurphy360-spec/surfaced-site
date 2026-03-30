@@ -109,6 +109,11 @@
   background: #f9fafb;
 }
 
+.run-row-link--disabled {
+  color: #9ca3af;
+  cursor: default;
+}
+
 @media (max-width: 768px) {
   .run-row {
     flex-direction: column;

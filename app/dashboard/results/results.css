@@ -105,6 +105,41 @@
   border: none;
 }
 
+.results-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 48px 24px;
+  text-align: center;
+}
+.results-error p {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f1117;
+}
+.results-error-detail {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: #6b7280 !important;
+}
+.results-error-link {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  background: #2563eb;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.results-error-link:hover { background: #1d4ed8; }
+
 @media (max-width: 640px) {
   .results-topbar {
     height: auto;

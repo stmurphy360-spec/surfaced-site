@@ -186,7 +186,7 @@ export default function DashboardPage() {
               id="brand-name"
               type="text"
               className="pe-input"
-              placeholder="e.g. JG Wentworth"
+              placeholder="e.g. Acme Corp"
               value={brandName}
               onChange={(e) => setBrandName(e.target.value)}
               disabled={isRunning}
@@ -201,7 +201,7 @@ export default function DashboardPage() {
               <textarea
                 ref={promptRef}
                 className="pe-textarea"
-                placeholder="e.g. What are the best options for selling a structured settlement?"
+                placeholder="e.g. What are the best companies for [your service] in 2026?"
                 value={promptDraft}
                 onChange={(e) => setPromptDraft(e.target.value)}
                 disabled={isRunning}
@@ -246,7 +246,7 @@ export default function DashboardPage() {
               <input
                 type="text"
                 className="pe-input"
-                placeholder="e.g. Peachtree Financial"
+                placeholder="e.g. a competitor name"
                 value={competitorDraft}
                 onChange={(e) => setCompetitorDraft(e.target.value)}
                 disabled={isRunning}
